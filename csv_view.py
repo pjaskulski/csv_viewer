@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 import pandas as pd
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QFileDialog, QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QAbstractItemView
 from PyQt5.QtCore import Qt, QSize
 
@@ -25,6 +25,10 @@ class TableModel(QtCore.QAbstractTableModel):
 
         if role == Qt.TextAlignmentRole:
             return Qt.AlignVCenter + Qt.AlignRight
+
+        if role == Qt.ForegroundRole:
+            if pd.isna(self._data.iloc[index.row(), index.column()]):
+                return QtGui.QColor("red")
 
     def rowCount(self, index):
         # the length of csv file (rows)
@@ -87,7 +91,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # status bar
         self.my_status = QStatusBar(self)
-        self.labelStatus = QLabel("Rows: 0")
+        self.labelStatus = QLabel("Rows: 0, Cols: 0")
         self.my_status.addPermanentWidget(self.labelStatus)
         self.setStatusBar(self.my_status)
 
@@ -108,7 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
             try:
                 data = pd.read_csv(file_name, sep=",", decimal=",")
                 self.model = TableModel(data)
-                self.labelStatus.setText(f"Rows: {data.shape[0]}")
+                self.labelStatus.setText(f"Rows: {data.shape[0]}, Cols: {data.shape[1]}")
                 self.table.setModel(self.model)
                 if data.shape[0] > 0:
                     self.table.selectRow(0)

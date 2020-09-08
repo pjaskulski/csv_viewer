@@ -15,11 +15,16 @@ def gen_int(filename, rows, cols):
         # data
         for i in range(1, rows + 1):
             for j in range(1, cols + 1):
-                liczba = randint(1, 100)
-                if j == cols:
-                    f.write(str(liczba))
+                # brak danych dla ok 10% komórek
+                if randint(1, 11) != 10:
+                    liczba = str(randint(1, 100))
                 else:
-                    f.write(f"{str(liczba)},")
+                    liczba = ""
+
+                if j == cols:
+                    f.write(liczba)
+                else:
+                    f.write(f"{liczba},")
             f.write("\n")
 
 
