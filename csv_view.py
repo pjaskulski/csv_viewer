@@ -75,7 +75,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # quit action
         self.button_quit = QAction("Quit", self)
         self.button_quit.setStatusTip("Quit application")
-        self.button_quit.triggered.connect(self.closeEvent)
+        self.button_quit.triggered.connect(self.close)
 
         # menu bar
         menu = self.menuBar()
@@ -106,7 +106,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self, "Open CSV file...", "", "CSV (*.csv);;All Files (*)")
         if file_name:
             try:
-                data = pd.read_csv(file_name, sep=";", decimal=",")
+                data = pd.read_csv(file_name, sep=",", decimal=",")
                 self.model = TableModel(data)
                 self.labelStatus.setText(f"Rows: {data.shape[0]}")
                 self.table.setModel(self.model)
@@ -127,16 +127,16 @@ class MainWindow(QtWidgets.QMainWindow):
         result = QMessageBox.question(
             self,app_title,
             "Are you sure you want to quit?",
-            QMessageBox.Yes | QMessageBox.Cancel,
+            QMessageBox.Yes | QMessageBox.No,
         )
 
         if result == QMessageBox.Yes:
-            app.quit()
+            event.accept()
         else:
-            pass
+            event.ignore()
 
 
 app = QtWidgets.QApplication(sys.argv)
 window = MainWindow()
 window.show()
-app.exec_()
+sys.exit(app.exec_())
