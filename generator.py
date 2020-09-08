@@ -28,4 +28,5 @@ def gen_int(filename, rows, cols):
             f.write("\n")
 
 
-gen_int("dane.csv", 100000, 10)
+#gen_int("dane.csv", 100000, 10)
+gen_int("small_data.csv", 5000, 10)
