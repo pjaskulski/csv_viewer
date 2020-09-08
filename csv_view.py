@@ -2,7 +2,8 @@ import sys
 import numpy as np
 import pandas as pd
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QFileDialog, QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QAbstractItemView
+from PyQt5.QtWidgets import QFileDialog, QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QAbstractItemView, \
+    QDialog, QDialogButtonBox, QVBoxLayout, QPlainTextEdit
 from PyQt5.QtCore import Qt, QSize
 
 
@@ -48,10 +49,29 @@ class TableModel(QtCore.QAbstractTableModel):
                 return str(self._data.index[section])
 
 
+class SummaryDialog(QDialog):
+    def __init__(self, summary_data):
+        super().__init__()
+        self.setMinimumSize(600, 350)
+        self.setWindowTitle("Summary")
+        QBtn = QDialogButtonBox.Ok
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.layout = QVBoxLayout()
+        message = QLabel("Something happened, is that OK?")
+        info = QPlainTextEdit()
+        info.appendPlainText(summary_data)
+        info.setReadOnly(True)
+        self.layout.addWidget(info)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setMinimumSize(600, 300)
+        self.df = None
 
         # toolbar
         self.toolbar = QToolBar("MainToolbar")
@@ -66,6 +86,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_open.setStatusTip("Open CSV file...")
         self.button_open.triggered.connect(self.onToolbarOpenButtonClick)
         self.toolbar.addAction(self.button_open)
+
+        # summary action
+        style_close = self.toolbar.style()
+        icon = style_close.standardIcon(QStyle.SP_FileDialogInfoView)
+        self.button_summary = QAction(icon, "Summary", self)
+        self.button_summary.setStatusTip("Show summary for the current file")
+        self.button_summary.triggered.connect(self.onToolbarSummaryButtonClick)
+        self.toolbar.addAction(self.button_summary)
+        self.button_summary.setEnabled(False)
 
         # close action
         style_close = self.toolbar.style()
@@ -85,13 +114,14 @@ class MainWindow(QtWidgets.QMainWindow):
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
         file_menu.addAction(self.button_open)
+        file_menu.addAction(self.button_summary)
         file_menu.addAction(self.button_close)
         file_menu.addSeparator()
         file_menu.addAction(self.button_quit)
 
         # status bar
         self.my_status = QStatusBar(self)
-        self.labelStatus = QLabel("Rows: 0, Cols: 0")
+        self.labelStatus = QLabel("Rows: 0 Cols: 0")
         self.my_status.addPermanentWidget(self.labelStatus)
         self.setStatusBar(self.my_status)
 
@@ -111,25 +141,36 @@ class MainWindow(QtWidgets.QMainWindow):
         if file_name:
             try:
                 data = pd.read_csv(file_name, sep=",", decimal=",")
+                self.df = data
                 self.model = TableModel(data)
-                self.labelStatus.setText(f"Rows: {data.shape[0]}, Cols: {data.shape[1]}")
+                self.labelStatus.setText(f"Rows: {data.shape[0]} Cols: {data.shape[1]}")
                 self.table.setModel(self.model)
                 if data.shape[0] > 0:
                     self.table.selectRow(0)
                 self.button_close.setEnabled(True)
+                self.button_summary.setEnabled(True)
+                self.setWindowTitle(app_title + ": " + file_name)
             except Exception:
                 pass
 
     def onToolbarCloseButtonClick(self):
         """Clear tableview, set statusbar and disable toolbar close icon"""
         self.table.setModel(None)
+        self.df = None
         self.button_close.setEnabled(False)
-        self.labelStatus.setText("Rows: 0")
+        self.button_summary.setEnabled(False)
+        self.labelStatus.setText("Rows: 0 Cols: 0")
+
+    def onToolbarSummaryButtonClick(self):
+        """Show Summary dialog"""
+        dlg = SummaryDialog(self.df.describe().to_string())
+        dlg.setWindowTitle("Summary")
+        dlg.exec_()
 
     def closeEvent(self, event):
         """ Quit application, ask user before """
         result = QMessageBox.question(
-            self,app_title,
+            self, app_title,
             "Are you sure you want to quit?",
             QMessageBox.Yes | QMessageBox.No,
         )
