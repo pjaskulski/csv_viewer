@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout,
 class ParameterDialog(QDialog):
     def __init__(self):
         super().__init__()
+        self.setMinimumSize(480, 200)
         self.separator = ","
         QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         self.buttonBox = QDialogButtonBox(QBtn)
