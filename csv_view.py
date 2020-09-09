@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QFileDialog, QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QAbstractItemView, \
     QDialog, QDialogButtonBox, QVBoxLayout, QPlainTextEdit
 from PyQt5.QtCore import Qt, QSize
+from summary import SummaryDialog
 
 
 app_title = "CSV Viewer"
@@ -47,24 +48,6 @@ class TableModel(QtCore.QAbstractTableModel):
 
             if orientation == Qt.Vertical:
                 return str(self._data.index[section])
-
-
-class SummaryDialog(QDialog):
-    def __init__(self, summary_data):
-        super().__init__()
-        self.setMinimumSize(600, 350)
-        self.setWindowTitle("Summary")
-        QBtn = QDialogButtonBox.Ok
-        self.buttonBox = QDialogButtonBox(QBtn)
-        self.buttonBox.accepted.connect(self.accept)
-        self.layout = QVBoxLayout()
-        message = QLabel("Something happened, is that OK?")
-        info = QPlainTextEdit()
-        info.appendPlainText(summary_data)
-        info.setReadOnly(True)
-        self.layout.addWidget(info)
-        self.layout.addWidget(self.buttonBox)
-        self.setLayout(self.layout)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -163,7 +146,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onToolbarSummaryButtonClick(self):
         """Show Summary dialog"""
-        dlg = SummaryDialog(self.df.describe().to_string())
+        dlg = SummaryDialog(self.df.describe())
         dlg.setWindowTitle("Summary")
         dlg.exec_()
 
