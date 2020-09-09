@@ -2,10 +2,10 @@ import sys
 import numpy as np
 import pandas as pd
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QFileDialog, QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QAbstractItemView, \
-    QDialog, QDialogButtonBox, QVBoxLayout, QPlainTextEdit
+from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel
 from PyQt5.QtCore import Qt, QSize
 from summary import SummaryDialog
+from fileparam import ParameterDialog
 
 
 app_title = "CSV Viewer"
@@ -119,11 +119,22 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onToolbarOpenButtonClick(self):
         """ Open csv file, load to tableview, set statusbar, enable close icon"""
-        file_name, _ = QFileDialog.getOpenFileName(
-            self, "Open CSV file...", "", "CSV (*.csv);;All Files (*)")
+
+        dlg = ParameterDialog()
+        dlg.setWindowTitle("Open")
+        if dlg.exec_():
+            file_name = dlg.filename.text()
+            separator = dlg.separator
+        else:
+            file_name = None
+
+        #file_name, _ = QFileDialog.getOpenFileName(
+        #    self, "Open CSV file...", "", "CSV (*.csv);;All Files (*)")
+
         if file_name:
             try:
-                data = pd.read_csv(file_name, sep=",", decimal=",")
+                data = pd.read_csv(file_name, sep=separator, decimal=".")
+                print(separator)
                 self.df = data
                 self.model = TableModel(data)
                 self.labelStatus.setText(f"Rows: {data.shape[0]} Cols: {data.shape[1]}")
