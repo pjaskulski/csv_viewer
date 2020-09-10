@@ -1,15 +1,15 @@
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, \
+from PyQt5.QtWidgets import QDialog, QMessageBox, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, \
     QRadioButton, QFileDialog, QGroupBox
 
 
 class ParameterDialog(QDialog):
     def __init__(self):
         super().__init__()
-        self.setMinimumSize(480, 200)
+        self.setMinimumSize(520, 200)
         self.separator = ","
         QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         self.buttonBox = QDialogButtonBox(QBtn)
-        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.accepted.connect(self.validate)
         self.buttonBox.rejected.connect(self.reject)
 
         self.layout = QVBoxLayout()
@@ -54,6 +54,12 @@ class ParameterDialog(QDialog):
         self.layout.addWidget(self.buttonBox)
 
         self.setLayout(self.layout)
+
+    def validate(self):
+        if self.filename.text() == '':
+            QMessageBox.about(self, 'Error', 'Path to CSV file is mandatory.')
+        else:
+            self.accept()
 
     def onClicked(self):
         radio = self.sender()
