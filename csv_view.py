@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import sys
 import io
 import numpy as np
@@ -75,8 +77,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.addAction(self.button_open)
 
         # summary action
-        style_close = self.toolbar.style()
-        icon = style_close.standardIcon(QStyle.SP_FileDialogListView)
+        style_summary = self.toolbar.style()
+        icon = style_summary.standardIcon(QStyle.SP_FileDialogListView)
         self.button_summary = QAction(icon, "Summary", self)
         self.button_summary.setStatusTip("Show summary for the current file")
         self.button_summary.triggered.connect(self.onToolbarSummaryButtonClick)
@@ -85,7 +87,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # info action
         style_info = self.toolbar.style()
-        icon = style_info.standardIcon(QStyle.SP_FileDialogInfoView)
+        icon = style_info.standardIcon(QStyle.SP_FileIcon)
         self.button_info = QAction(icon, "Info", self)
         self.button_info.setStatusTip("Show summary for the current file")
         self.button_info.triggered.connect(self.onToolbarInfoButtonClick)
@@ -107,9 +109,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_quit.triggered.connect(self.close)
 
         # about action
-        self.button_about = QAction("About", self)
+        style_about = self.toolbar.style()
+        icon = style_about.standardIcon(QStyle.SP_FileDialogInfoView)
+        self.button_about = QAction(icon, "About", self)
         self.button_about.setStatusTip("About application")
         self.button_about.triggered.connect(self.about)
+        self.toolbar.addAction(self.button_about)
+        self.button_about.setEnabled(True)
 
         # menu bar
         menu = self.menuBar()
@@ -165,8 +171,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.button_summary.setEnabled(True)
             self.button_info.setEnabled(True)
             self.setWindowTitle(app_title + ": " + file_name)
-        except Exception:
-            pass
+        except Exception as e:
+            QMessageBox.warning(self, 'Error', f"Error loading the file:\n {file_name}")
 
     def onToolbarCloseButtonClick(self):
         """Clear tableview, set statusbar and disable toolbar close icon"""
