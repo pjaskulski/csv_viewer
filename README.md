@@ -9,7 +9,9 @@ command line usage:
         -h, --help    show this help message and exit
         -p PATH       Path to CSV file
         -s SEPARATOR  Separator: comma, semicolon or tab
-
+    
+    example:
+        python csv_viewer.py -p small_data.csv -s comma 
 
 Screenshots:
 
