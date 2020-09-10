@@ -1,4 +1,5 @@
 import sys
+import io
 import numpy as np
 import pandas as pd
 from PyQt5 import QtCore, QtWidgets, QtGui
@@ -7,6 +8,7 @@ from PyQt5.QtCore import Qt, QSize
 from summary import SummaryDialog
 from fileparam import ParameterDialog
 from about import AboutDialog
+from info import InfoDialog
 
 
 app_title = "CSV Viewer"
@@ -73,12 +75,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # summary action
         style_close = self.toolbar.style()
-        icon = style_close.standardIcon(QStyle.SP_FileDialogInfoView)
+        icon = style_close.standardIcon(QStyle.SP_FileDialogListView)
         self.button_summary = QAction(icon, "Summary", self)
         self.button_summary.setStatusTip("Show summary for the current file")
         self.button_summary.triggered.connect(self.onToolbarSummaryButtonClick)
         self.toolbar.addAction(self.button_summary)
         self.button_summary.setEnabled(False)
+
+        # info action
+        style_info = self.toolbar.style()
+        icon = style_info.standardIcon(QStyle.SP_FileDialogInfoView)
+        self.button_info = QAction(icon, "Info", self)
+        self.button_info.setStatusTip("Show summary for the current file")
+        self.button_info.triggered.connect(self.onToolbarInfoButtonClick)
+        self.toolbar.addAction(self.button_info)
+        self.button_info.setEnabled(False)
 
         # close action
         style_close = self.toolbar.style()
@@ -104,6 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu = menu.addMenu("&File")
         file_menu.addAction(self.button_open)
         file_menu.addAction(self.button_summary)
+        file_menu.addAction(self.button_info)
         file_menu.addAction(self.button_close)
         file_menu.addSeparator()
         file_menu.addAction(self.button_quit)
@@ -136,9 +148,6 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             file_name = None
 
-        #file_name, _ = QFileDialog.getOpenFileName(
-        #    self, "Open CSV file...", "", "CSV (*.csv);;All Files (*)")
-
         if file_name:
             try:
                 data = pd.read_csv(file_name, sep=separator, decimal=".")
@@ -151,6 +160,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.table.selectRow(0)
                 self.button_close.setEnabled(True)
                 self.button_summary.setEnabled(True)
+                self.button_info.setEnabled(True)
                 self.setWindowTitle(app_title + ": " + file_name)
             except Exception:
                 pass
@@ -161,12 +171,23 @@ class MainWindow(QtWidgets.QMainWindow):
         self.df = None
         self.button_close.setEnabled(False)
         self.button_summary.setEnabled(False)
+        self.button_info.setEnabled(False)
         self.labelStatus.setText("Rows: 0 Cols: 0")
 
     def onToolbarSummaryButtonClick(self):
         """Show Summary dialog"""
         dlg = SummaryDialog(self.df.describe())
         dlg.setWindowTitle("Summary")
+        dlg.exec_()
+
+    def onToolbarInfoButtonClick(self):
+        """Show Info dialog"""
+        buf = io.StringIO()
+        self.df.info(buf=buf)
+        tmp = buf.getvalue()
+
+        dlg = InfoDialog(tmp)
+        dlg.setWindowTitle("Info")
         dlg.exec_()
 
     def closeEvent(self, event):
