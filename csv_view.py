@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import argparse
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QApplication
+from PyQt5.QtCore import Qt, QSize, QSettings, QFileInfo
 from summary import SummaryDialog
 from fileparam import ParameterDialog
 from about import AboutDialog
@@ -57,10 +57,13 @@ class TableModel(QtCore.QAbstractTableModel):
 
 
 class MainWindow(QtWidgets.QMainWindow):
+    MaxRecentFiles = 5
+
     def __init__(self):
         super().__init__()
         self.setMinimumSize(600, 300)
         self.df = None
+        self.recentFileActs = []
 
         # toolbar
         self.toolbar = QToolBar("MainToolbar")
@@ -117,6 +120,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.addAction(self.button_about)
         self.button_about.setEnabled(True)
 
+        # recent menu action
+        for i in range(MainWindow.MaxRecentFiles):
+            self.recentFileActs.append(
+                QAction(self, visible=False, triggered=self.openRecentFile)
+            )
+
         # menu bar
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
@@ -124,10 +133,17 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(self.button_summary)
         file_menu.addAction(self.button_info)
         file_menu.addAction(self.button_close)
+        self.separatorAct = file_menu.addSeparator()
+
+        for i in range(MainWindow.MaxRecentFiles):
+            file_menu.addAction(self.recentFileActs[i])
         file_menu.addSeparator()
+
         file_menu.addAction(self.button_quit)
         help_menu = menu.addMenu("&Help")
         help_menu.addAction(self.button_about)
+
+        self.updateRecentFileActions()
 
         # status bar
         self.my_status = QStatusBar(self)
@@ -135,6 +151,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.my_status.addPermanentWidget(self.labelStatus)
         self.setStatusBar(self.my_status)
 
+        # set TableView
         self.table = QtWidgets.QTableView()
         self.table.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.table.setSelectionMode(QtWidgets.QTableView.SingleSelection)
@@ -145,7 +162,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setGeometry(200, 100, 1000, 600)
 
     def onToolbarOpenButtonClick(self):
-        """ Open csv file, load to tableview, set statusbar, enable close icon"""
+        """ Show open dialog """
 
         dlg = ParameterDialog()
         dlg.setWindowTitle("Open")
@@ -156,9 +173,27 @@ class MainWindow(QtWidgets.QMainWindow):
             file_name = None
 
         if file_name:
+            self.saveRecent(file_name)
+            self.open_csv_file(file_name, separator)
+
+    def onOpenRecentFile(self, file_name):
+        """ Open file from recent list, show open dialog """
+
+        dlg = ParameterDialog()
+        dlg.setWindowTitle("Open")
+        dlg.filename.setText(file_name)
+        if dlg.exec_():
+            file_name = dlg.filename.text()
+            separator = dlg.separator
+        else:
+            file_name = None
+
+        if file_name:
+            self.saveRecent(file_name)
             self.open_csv_file(file_name, separator)
 
     def open_csv_file(self, file_name, separator, decimal="."):
+        """ Open csv file, load to tableview, set statusbar, enable close icon"""
         try:
             data = pd.read_csv(file_name, sep=separator, decimal=decimal)
             self.df = data
@@ -175,7 +210,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QMessageBox.warning(self, 'Error', f"Error loading the file:\n {file_name}")
 
     def onToolbarCloseButtonClick(self):
-        """Clear tableview, set statusbar and disable toolbar close icon"""
+        """Clear tableview, set statusbar and disable toolbar close, summary and info icons"""
         self.table.setModel(None)
         self.df = None
         self.button_close.setEnabled(False)
@@ -213,8 +248,55 @@ class MainWindow(QtWidgets.QMainWindow):
             event.ignore()
 
     def about(self):
+        """ show About dialog (info about app)"""
         dlg = AboutDialog()
         dlg.exec_()
+
+    def openRecentFile(self):
+        """ open file from recent list action """
+        action = self.sender()
+        if action:
+            self.onOpenRecentFile(action.data())
+
+    def saveRecent(self, file_name):
+        settings = QSettings('CSV_Viewer', 'CSV_Viewer')
+        files = settings.value('recentFileList', [])
+
+        try:
+            files.remove(file_name)
+        except ValueError:
+            pass
+
+        files.insert(0, file_name)
+        del files[MainWindow.MaxRecentFiles:]
+
+        settings.setValue('recentFileList', files)
+
+        for widget in QtWidgets.QApplication.topLevelWidgets():
+            if isinstance(widget, MainWindow):
+                widget.updateRecentFileActions()
+
+    def updateRecentFileActions(self):
+        """ update recent file list """
+        settings = QSettings('CSV_Viewer', 'CSV_Viewer')
+        files = settings.value('recentFileList', [])
+
+        numRecentFiles = min(len(files), MainWindow.MaxRecentFiles)
+
+        for i in range(numRecentFiles):
+            text = "&%d %s" % (i + 1, self.strippedName(files[i]))
+            self.recentFileActs[i].setText(text)
+            self.recentFileActs[i].setData(files[i])
+            self.recentFileActs[i].setVisible(True)
+
+        for j in range(numRecentFiles, MainWindow.MaxRecentFiles):
+            self.recentFileActs[j].setVisible(False)
+
+        self.separatorAct.setVisible((numRecentFiles > 0))
+
+    def strippedName(self, fullFileName):
+        """ return only file name, without path"""
+        return QFileInfo(fullFileName).fileName()
 
 
 app = QtWidgets.QApplication(sys.argv)
