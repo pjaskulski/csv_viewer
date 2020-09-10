@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, 
 from PyQt5.QtCore import Qt, QSize
 from summary import SummaryDialog
 from fileparam import ParameterDialog
+from about import AboutDialog
 
 
 app_title = "CSV Viewer"
@@ -93,6 +94,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_quit.setStatusTip("Quit application")
         self.button_quit.triggered.connect(self.close)
 
+        # about action
+        self.button_about = QAction("About", self)
+        self.button_about.setStatusTip("About application")
+        self.button_about.triggered.connect(self.about)
+
         # menu bar
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
@@ -101,6 +107,8 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(self.button_close)
         file_menu.addSeparator()
         file_menu.addAction(self.button_quit)
+        help_menu = menu.addMenu("&Help")
+        help_menu.addAction(self.button_about)
 
         # status bar
         self.my_status = QStatusBar(self)
@@ -173,6 +181,10 @@ class MainWindow(QtWidgets.QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def about(self):
+        dlg = AboutDialog()
+        dlg.exec_()
 
 
 app = QtWidgets.QApplication(sys.argv)
