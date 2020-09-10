@@ -2,6 +2,7 @@ import sys
 import io
 import numpy as np
 import pandas as pd
+import argparse
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel
 from PyQt5.QtCore import Qt, QSize
@@ -149,21 +150,23 @@ class MainWindow(QtWidgets.QMainWindow):
             file_name = None
 
         if file_name:
-            try:
-                data = pd.read_csv(file_name, sep=separator, decimal=".")
-                print(separator)
-                self.df = data
-                self.model = TableModel(data)
-                self.labelStatus.setText(f"Rows: {data.shape[0]} Cols: {data.shape[1]}")
-                self.table.setModel(self.model)
-                if data.shape[0] > 0:
-                    self.table.selectRow(0)
-                self.button_close.setEnabled(True)
-                self.button_summary.setEnabled(True)
-                self.button_info.setEnabled(True)
-                self.setWindowTitle(app_title + ": " + file_name)
-            except Exception:
-                pass
+            self.open_csv_file(file_name, separator)
+
+    def open_csv_file(self, file_name, separator, decimal="."):
+        try:
+            data = pd.read_csv(file_name, sep=separator, decimal=decimal)
+            self.df = data
+            self.model = TableModel(data)
+            self.labelStatus.setText(f"Rows: {data.shape[0]} Cols: {data.shape[1]}")
+            self.table.setModel(self.model)
+            if data.shape[0] > 0:
+                self.table.selectRow(0)
+            self.button_close.setEnabled(True)
+            self.button_summary.setEnabled(True)
+            self.button_info.setEnabled(True)
+            self.setWindowTitle(app_title + ": " + file_name)
+        except Exception:
+            pass
 
     def onToolbarCloseButtonClick(self):
         """Clear tableview, set statusbar and disable toolbar close icon"""
@@ -210,5 +213,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
 app = QtWidgets.QApplication(sys.argv)
 window = MainWindow()
+
+# parse command line arguments if present
+if len(sys.argv) > 1:
+    parser = argparse.ArgumentParser("python csv_viewer.py")
+    parser.add_argument('-p', action='store', dest='path', required=True,
+                        help='Path to CSV file')
+    parser.add_argument('-s', action='store', dest='separator', required=True,
+                        help='Separator: comma, semicolon or tab')
+    results = parser.parse_args()
+    sep = {'comma':',', 'semicolon':';', 'tab':'\t'}
+    if results.path != "" and results.separator in sep:
+        window.open_csv_file(results.path, sep[results.separator])
+    else:
+        print("Invalid parameters. Run cv_view with -h option to help.")
+
 window.show()
 sys.exit(app.exec_())
