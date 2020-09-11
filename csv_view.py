@@ -16,6 +16,7 @@ from info import InfoDialog
 
 app_title = "CSV Viewer"
 sep_type = {'comma':',', 'semicolon':';', 'tab':'\t'}
+dec_type = {'dot':'.', 'comma':','}
 
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, data):
@@ -169,29 +170,31 @@ class MainWindow(QtWidgets.QMainWindow):
         if dlg.exec_():
             file_name = dlg.filename.text()
             separator = dlg.separator
+            decimal = dlg.decimal
         else:
             file_name = None
 
         if file_name:
             self.saveRecent(file_name)
-            self.open_csv_file(file_name, separator)
+            self.open_csv_file(file_name, separator, decimal)
 
-    def onOpenRecentFile(self, file_name, sep=','):
+    def onOpenRecentFile(self, file_name, sep=',', decimal='.'):
         """ Open file from recent list, show open dialog """
 
-        dlg = ParameterDialog(file_name, sep)
+        dlg = ParameterDialog(file_name, sep, decimal)
         dlg.setWindowTitle("Open")
         if dlg.exec_():
             file_name = dlg.filename.text()
             separator = dlg.separator
+            decimal = dlg.decimal
         else:
             file_name = None
 
         if file_name:
             self.saveRecent(file_name)
-            self.open_csv_file(file_name, separator)
+            self.open_csv_file(file_name, separator, decimal)
 
-    def open_csv_file(self, file_name, sep, decimal="."):
+    def open_csv_file(self, file_name, sep=',', decimal="."):
         """ Open csv file, load to tableview, set statusbar, enable close icon"""
         try:
             data = pd.read_csv(file_name, sep=sep, decimal=decimal)
@@ -308,11 +311,15 @@ if len(sys.argv) > 1:
                         help='Path to CSV file')
     parser.add_argument('-s', action='store', dest='separator', required=True,
                         help='Separator: comma, semicolon or tab')
+    parser.add_argument('-d', action='store', dest='decimal', required=False,
+                        help='Decimal point: dot or comma')
     results = parser.parse_args()
-    if results.path != "" and results.separator in sep_type:
-        window.open_csv_file(results.path, sep_type[results.separator])
+    if results.path != "" and results.separator in sep_type and results.decimal in dec_type:
+        window.open_csv_file(results.path,
+                             sep_type[results.separator],
+                             dec_type[results.decimal])
     else:
-        print("Invalid parameters. Run cv_view with -h option to help.")
+        print("Invalid parameters. Run csv_view with -h option to help.")
 
 window.show()
 sys.exit(app.exec_())

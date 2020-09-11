@@ -1,12 +1,15 @@
-from PyQt5.QtWidgets import QDialog, QMessageBox, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, \
-    QRadioButton, QFileDialog, QGroupBox
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QDialog, QMessageBox, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, \
+    QPushButton, \
+    QRadioButton, QFileDialog, QGroupBox, QSpacerItem
 
 
 class ParameterDialog(QDialog):
-    def __init__(self, file_name='', sep=','):
+    def __init__(self, file_name='', sep=',', decimal='.'):
         super().__init__()
         self.setMinimumSize(520, 200)
         self.separator = sep
+        self.decimal = decimal
         QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         self.buttonBox = QDialogButtonBox(QBtn)
         self.buttonBox.accepted.connect(self.validate)
@@ -28,9 +31,11 @@ class ParameterDialog(QDialog):
         self.btn_file.clicked.connect(self.onBtnFileClicked)
         self.layout_file.addWidget(self.btn_file)
 
+        # separator (delimiter)
         groupbox_sep = QGroupBox("Separator:")
         self.layout.addWidget(groupbox_sep)
         self.layout_sep = QHBoxLayout()
+        self.layout_sep.setAlignment(QtCore.Qt.AlignCenter)
         groupbox_sep.setLayout(self.layout_sep)
 
         self.radio_comma = QRadioButton("Comma")
@@ -49,8 +54,33 @@ class ParameterDialog(QDialog):
         self.radio_tab.toggled.connect(self.onClicked)
 
         self.layout_sep.addWidget(self.radio_comma)
+        self.layout_sep.addSpacerItem(QSpacerItem(40, 10))
         self.layout_sep.addWidget(self.radio_semicol)
+        self.layout_sep.addSpacerItem(QSpacerItem(40, 10))
         self.layout_sep.addWidget(self.radio_tab)
+
+        # decimal point
+        groupbox_dp = QGroupBox("Decimal point:")
+        self.layout.addWidget(groupbox_dp)
+        self.layout_dp = QHBoxLayout()
+        self.layout_dp.setAlignment(QtCore.Qt.AlignCenter)
+
+        groupbox_dp.setLayout(self.layout_dp)
+
+        self.radio_dp_dot = QRadioButton("Dot")
+        self.radio_dp_dot.setChecked(decimal == '.')
+        self.radio_dp_dot.decimal = "."
+        self.radio_dp_dot.toggled.connect(self.onClickedDecimal)
+
+        self.radio_dp_comma = QRadioButton("Comma")
+        self.radio_dp_comma.setChecked(decimal == ',')
+        self.radio_dp_comma.decimal = ","
+        self.radio_dp_comma.toggled.connect(self.onClickedDecimal)
+
+        self.layout_dp.addWidget(self.radio_dp_dot)
+        self.layout_dp.addSpacerItem(QSpacerItem(100, 10))
+        self.layout_dp.addWidget(self.radio_dp_comma)
+        #
 
         self.layout.addWidget(self.buttonBox)
 
@@ -66,6 +96,11 @@ class ParameterDialog(QDialog):
         radio = self.sender()
         if radio.isChecked():
             self.separator = radio.separator
+
+    def onClickedDecimal(self):
+        radio = self.sender()
+        if radio.isChecked():
+            self.decimal = radio.decimal
 
     def onBtnFileClicked(self):
         file_name, _ = QFileDialog.getOpenFileName(
