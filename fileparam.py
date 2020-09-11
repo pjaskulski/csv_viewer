@@ -3,10 +3,10 @@ from PyQt5.QtWidgets import QDialog, QMessageBox, QDialogButtonBox, QVBoxLayout,
 
 
 class ParameterDialog(QDialog):
-    def __init__(self):
+    def __init__(self, file_name='', sep=','):
         super().__init__()
         self.setMinimumSize(520, 200)
-        self.separator = ","
+        self.separator = sep
         QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         self.buttonBox = QDialogButtonBox(QBtn)
         self.buttonBox.accepted.connect(self.validate)
@@ -21,6 +21,7 @@ class ParameterDialog(QDialog):
 
         self.layout_file.addWidget(QLabel("File:"))
         self.filename = QLineEdit()
+        self.filename.setText(file_name)
         self.layout_file.addWidget(self.filename)
         self.btn_file = QPushButton("...")
         self.btn_file.setMaximumWidth(25)
@@ -33,17 +34,17 @@ class ParameterDialog(QDialog):
         groupbox_sep.setLayout(self.layout_sep)
 
         self.radio_comma = QRadioButton("Comma")
-        self.radio_comma.setChecked(True)
+        self.radio_comma.setChecked(sep == ',')
         self.radio_comma.separator = ","
         self.radio_comma.toggled.connect(self.onClicked)
 
         self.radio_semicol = QRadioButton("Semicolon")
-        self.radio_semicol.setChecked(False)
+        self.radio_semicol.setChecked(sep == ';')
         self.radio_semicol.separator = ";"
         self.radio_semicol.toggled.connect(self.onClicked)
 
         self.radio_tab = QRadioButton("Tab")
-        self.radio_tab.setChecked(False)
+        self.radio_tab.setChecked(sep == '\t')
         self.radio_tab.separator = "\t"
         self.radio_tab.toggled.connect(self.onClicked)
 

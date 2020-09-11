@@ -15,7 +15,7 @@ from info import InfoDialog
 
 
 app_title = "CSV Viewer"
-
+sep_type = {'comma':',', 'semicolon':';', 'tab':'\t'}
 
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, data):
@@ -176,12 +176,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.saveRecent(file_name)
             self.open_csv_file(file_name, separator)
 
-    def onOpenRecentFile(self, file_name):
+    def onOpenRecentFile(self, file_name, sep=','):
         """ Open file from recent list, show open dialog """
 
-        dlg = ParameterDialog()
+        dlg = ParameterDialog(file_name, sep)
         dlg.setWindowTitle("Open")
-        dlg.filename.setText(file_name)
         if dlg.exec_():
             file_name = dlg.filename.text()
             separator = dlg.separator
@@ -192,10 +191,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.saveRecent(file_name)
             self.open_csv_file(file_name, separator)
 
-    def open_csv_file(self, file_name, separator, decimal="."):
+    def open_csv_file(self, file_name, sep, decimal="."):
         """ Open csv file, load to tableview, set statusbar, enable close icon"""
         try:
-            data = pd.read_csv(file_name, sep=separator, decimal=decimal)
+            data = pd.read_csv(file_name, sep=sep, decimal=decimal)
             self.df = data
             self.model = TableModel(data)
             self.labelStatus.setText(f"Rows: {data.shape[0]} Cols: {data.shape[1]}")
@@ -310,9 +309,8 @@ if len(sys.argv) > 1:
     parser.add_argument('-s', action='store', dest='separator', required=True,
                         help='Separator: comma, semicolon or tab')
     results = parser.parse_args()
-    sep = {'comma':',', 'semicolon':';', 'tab':'\t'}
-    if results.path != "" and results.separator in sep:
-        window.open_csv_file(results.path, sep[results.separator])
+    if results.path != "" and results.separator in sep_type:
+        window.open_csv_file(results.path, sep_type[results.separator])
     else:
         print("Invalid parameters. Run cv_view with -h option to help.")
 
