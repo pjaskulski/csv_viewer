@@ -98,6 +98,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.addAction(self.button_info)
         self.button_info.setEnabled(False)
 
+        # resize action
+        style_resize = self.toolbar.style()
+        icon = style_resize.standardIcon(QStyle.SP_BrowserReload)
+        self.button_resize = QAction(icon, "Resize columns", self)
+        self.button_resize.setStatusTip("Resize columns width to content ")
+        self.button_resize.triggered.connect(self.onResizeColumns)
+        self.toolbar.addAction(self.button_resize)
+        self.button_resize.setEnabled(False)
+
         # close action
         style_close = self.toolbar.style()
         icon = style_close.standardIcon(QStyle.SP_DialogCloseButton)
@@ -131,8 +140,6 @@ class MainWindow(QtWidgets.QMainWindow):
         menu = self.menuBar()
         file_menu = menu.addMenu("&File")
         file_menu.addAction(self.button_open)
-        file_menu.addAction(self.button_summary)
-        file_menu.addAction(self.button_info)
         file_menu.addAction(self.button_close)
         self.separatorAct = file_menu.addSeparator()
 
@@ -141,6 +148,13 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addSeparator()
 
         file_menu.addAction(self.button_quit)
+
+        view_menu = menu.addMenu("Vie&w")
+        view_menu.addAction(self.button_summary)
+        view_menu.addAction(self.button_info)
+        view_menu.addSeparator()
+        view_menu.addAction(self.button_resize)
+
         help_menu = menu.addMenu("&Help")
         help_menu.addAction(self.button_about)
 
@@ -156,6 +170,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table = QtWidgets.QTableView()
         self.table.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.table.setSelectionMode(QtWidgets.QTableView.SingleSelection)
+
+        #header = self.table.horizontalHeader()
+        #for i in range(0, header.count() - 1):
+        #    header.setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeToContents)
 
         self.setCentralWidget(self.table)
         self.setWindowTitle(app_title)
@@ -204,12 +222,17 @@ class MainWindow(QtWidgets.QMainWindow):
             self.table.setModel(self.model)
             if data.shape[0] > 0:
                 self.table.selectRow(0)
+
             self.button_close.setEnabled(True)
             self.button_summary.setEnabled(True)
             self.button_info.setEnabled(True)
+            self.button_resize.setEnabled(True)
             self.setWindowTitle(app_title + ": " + file_name)
         except Exception as e:
             QMessageBox.warning(self, 'Error', f"Error loading the file:\n {file_name}")
+
+    def onResizeColumns(self):
+        self.table.resizeColumnsToContents()
 
     def onToolbarCloseButtonClick(self):
         """Clear tableview, set statusbar and disable toolbar close, summary and info icons"""
@@ -218,6 +241,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_close.setEnabled(False)
         self.button_summary.setEnabled(False)
         self.button_info.setEnabled(False)
+        self.button_resize.setEnabled(False)
         self.labelStatus.setText("Rows: 0 Cols: 0")
 
     def onToolbarSummaryButtonClick(self):
