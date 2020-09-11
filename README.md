@@ -1,4 +1,4 @@
-# csv_viewer
+# CSV_viewer
 CSV files viewer
 
 ## Requirement 
@@ -6,7 +6,7 @@ CSV files viewer
 -   Python3.x  
 -   Pandas 
 
-command line usage: 
+## Command line usage: 
 
     python csv_viewer.py [-h] -p PATH -s SEPARATOR -d DECIMAL
 
@@ -19,7 +19,7 @@ command line usage:
     example:
         python csv_viewer.py -p small_data.csv -s comma -d dot 
 
-Screenshots:
+## Screenshots:
 
 ![Screen](/doc/csv_viewer.png)
 
