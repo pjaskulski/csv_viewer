@@ -1,6 +1,11 @@
 # csv_viewer
 CSV files viewer
 
+## Requirement 
+-   PyQt5
+-   Python3.x  
+-   Pandas 
+
 command line usage: 
 
     python csv_viewer.py [-h] -p PATH -s SEPARATOR -d DECIMAL
