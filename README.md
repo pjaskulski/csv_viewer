@@ -3,15 +3,16 @@ CSV files viewer
 
 command line usage: 
 
-    python csv_viewer.py [-h] -p PATH -s SEPARATOR
+    python csv_viewer.py [-h] -p PATH -s SEPARATOR -d DECIMAL
 
     optional arguments:
         -h, --help    show this help message and exit
         -p PATH       Path to CSV file
         -s SEPARATOR  Separator: comma, semicolon or tab
+        -d DECIMAL    Decimal point: dot or comma
     
     example:
-        python csv_viewer.py -p small_data.csv -s comma 
+        python csv_viewer.py -p small_data.csv -s comma -d dot 
 
 Screenshots:
 
