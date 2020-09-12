@@ -1,7 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QDialog, QMessageBox, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, \
-    QPushButton, \
-    QRadioButton, QFileDialog, QGroupBox, QSpacerItem
+    QPushButton, QRadioButton, QFileDialog, QGroupBox, QSpacerItem
 
 
 class ParameterDialog(QDialog):
@@ -31,10 +30,13 @@ class ParameterDialog(QDialog):
         self.btn_file.clicked.connect(self.onBtnFileClicked)
         self.layout_file.addWidget(self.btn_file)
 
+        # separator and decimal group
+        self.layout_sepdec = QHBoxLayout()
+
         # separator (delimiter)
         groupbox_sep = QGroupBox("Separator:")
-        self.layout.addWidget(groupbox_sep)
-        self.layout_sep = QHBoxLayout()
+        self.layout_sepdec.addWidget(groupbox_sep)
+        self.layout_sep = QVBoxLayout()
         self.layout_sep.setAlignment(QtCore.Qt.AlignCenter)
         groupbox_sep.setLayout(self.layout_sep)
 
@@ -54,15 +56,13 @@ class ParameterDialog(QDialog):
         self.radio_tab.toggled.connect(self.onClicked)
 
         self.layout_sep.addWidget(self.radio_comma)
-        self.layout_sep.addSpacerItem(QSpacerItem(40, 10))
         self.layout_sep.addWidget(self.radio_semicol)
-        self.layout_sep.addSpacerItem(QSpacerItem(40, 10))
         self.layout_sep.addWidget(self.radio_tab)
 
         # decimal point
         groupbox_dp = QGroupBox("Decimal point:")
-        self.layout.addWidget(groupbox_dp)
-        self.layout_dp = QHBoxLayout()
+        self.layout_sepdec.addWidget(groupbox_dp)
+        self.layout_dp = QVBoxLayout()
         self.layout_dp.setAlignment(QtCore.Qt.AlignCenter)
 
         groupbox_dp.setLayout(self.layout_dp)
@@ -78,10 +78,10 @@ class ParameterDialog(QDialog):
         self.radio_dp_comma.toggled.connect(self.onClickedDecimal)
 
         self.layout_dp.addWidget(self.radio_dp_dot)
-        self.layout_dp.addSpacerItem(QSpacerItem(100, 10))
         self.layout_dp.addWidget(self.radio_dp_comma)
         #
 
+        self.layout.addLayout(self.layout_sepdec)
         self.layout.addWidget(self.buttonBox)
 
         self.setLayout(self.layout)
