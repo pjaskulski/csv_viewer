@@ -1,6 +1,7 @@
 import io
 import numpy as np
 import pandas as pd
+from sqlalchemy import create_engine
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QFileDialog
 from PyQt5.QtCore import Qt, QSize, QSettings, QFileInfo
@@ -109,6 +110,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.addAction(self.button_xlsx)
         self.button_xlsx.setEnabled(False)
 
+        # export to sqlite action
+        style_sqlite = self.toolbar.style()
+        icon = style_sqlite.standardIcon(QStyle.SP_FileLinkIcon)
+        self.button_sqlite = QAction(icon, "SQLite", self)
+        self.button_sqlite.setStatusTip("Export data to SQLite database")
+        self.button_sqlite.triggered.connect(self.onExportSQLite)
+        self.toolbar.addAction(self.button_sqlite)
+        self.button_sqlite.setEnabled(False)
+
         # close action
         style_close = self.toolbar.style()
         icon = style_close.standardIcon(QStyle.SP_DialogCloseButton)
@@ -159,6 +169,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         export_menu = menu.addMenu("&Export")
         export_menu.addAction(self.button_xlsx)
+        export_menu.addAction(self.button_sqlite)
 
         help_menu = menu.addMenu("&Help")
         help_menu.addAction(self.button_about)
@@ -229,6 +240,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.button_info.setEnabled(True)
             self.button_resize.setEnabled(True)
             self.button_xlsx.setEnabled(True)
+            self.button_sqlite.setEnabled(True)
             self.setWindowTitle(self.app_title + ": " + file_name)
         except Exception as e:
             QMessageBox.warning(self, 'Error', f"Error loading the file:\n {file_name}")
@@ -246,6 +258,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_info.setEnabled(False)
         self.button_resize.setEnabled(False)
         self.button_xlsx.setEnabled(False)
+        self.button_sqlite.setEnabled(False)
         self.labelStatus.setText("Rows: 0 Cols: 0")
 
     def onToolbarSummaryButtonClick(self):
@@ -266,9 +279,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onExportXlsx(self):
         """ Export data to xlsx file """
-        file_name, _ = QFileDialog.getSaveFileName(self, 'Export to file', '', ".xlsx(*.xlsx)")
+        file_name, _ = QFileDialog.getSaveFileName(self, 'Export to xlsx', '', ".xlsx(*.xlsx)")
         if file_name:
             self.df.to_excel(file_name, engine='xlsxwriter')
+
+    def onExportSQLite(self):
+        """ Export data to sqlite database """
+        file_name, _ = QFileDialog.getSaveFileName(self, 'Export to sqlite db', '', ".sqlite(*.sqlite)")
+        if file_name:
+            engine = create_engine(f'sqlite:///{file_name}', echo=False)
+            self.df.to_sql('csv_data', con=engine)
 
     def closeEvent(self, event):
         """ Quit application, ask user before """
