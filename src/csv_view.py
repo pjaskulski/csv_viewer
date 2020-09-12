@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 
 import sys
 import argparse
@@ -6,8 +6,8 @@ from PyQt5.QtWidgets import QApplication
 from mainwindow import MainWindow
 
 
-sep_type = {'comma':',', 'semicolon':';', 'tab':'\t'}
-dec_type = {'dot':'.', 'comma':','}
+sep_type = {'comma': ',', 'semicolon': ';', 'tab': '\t'}
+dec_type = {'dot': '.', 'comma': ','}
 
 app = QApplication(sys.argv)
 window = MainWindow("CSV Viewer")
