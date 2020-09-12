@@ -70,6 +70,7 @@ class MainWindow(QtWidgets.QMainWindow):
         style = self.toolbar.style()
         icon = style.standardIcon(QStyle.SP_FileDialogStart)
         self.button_open = QAction(icon, "Open", self)
+        self.button_open.setShortcut('Ctrl+O')
         self.button_open.setStatusTip("Open CSV file...")
         self.button_open.triggered.connect(self.onToolbarOpenButtonClick)
         self.toolbar.addAction(self.button_open)
@@ -78,6 +79,7 @@ class MainWindow(QtWidgets.QMainWindow):
         style_summary = self.toolbar.style()
         icon = style_summary.standardIcon(QStyle.SP_FileDialogListView)
         self.button_summary = QAction(icon, "Summary", self)
+        self.button_summary.setShortcut('Ctrl+S')
         self.button_summary.setStatusTip("Show summary for the current file")
         self.button_summary.triggered.connect(self.onToolbarSummaryButtonClick)
         self.toolbar.addAction(self.button_summary)
@@ -87,6 +89,7 @@ class MainWindow(QtWidgets.QMainWindow):
         style_info = self.toolbar.style()
         icon = style_info.standardIcon(QStyle.SP_FileIcon)
         self.button_info = QAction(icon, "Info", self)
+        self.button_info.setShortcut('Ctrl+I')
         self.button_info.setStatusTip("Show summary for the current file")
         self.button_info.triggered.connect(self.onToolbarInfoButtonClick)
         self.toolbar.addAction(self.button_info)
@@ -96,6 +99,7 @@ class MainWindow(QtWidgets.QMainWindow):
         style_resize = self.toolbar.style()
         icon = style_resize.standardIcon(QStyle.SP_BrowserReload)
         self.button_resize = QAction(icon, "Resize columns", self)
+        self.button_resize.setShortcut('Ctrl+R')
         self.button_resize.setStatusTip("Resize columns width to content")
         self.button_resize.triggered.connect(self.onResizeColumns)
         self.toolbar.addAction(self.button_resize)
@@ -132,6 +136,7 @@ class MainWindow(QtWidgets.QMainWindow):
         style_close = self.toolbar.style()
         icon = style_close.standardIcon(QStyle.SP_DialogCloseButton)
         self.button_close = QAction(icon, "Close", self)
+        self.button_close.setShortcut('Ctrl+X')
         self.button_close.setStatusTip("Close CSV file...")
         self.button_close.triggered.connect(self.onToolbarCloseButtonClick)
         self.toolbar.addAction(self.button_close)
@@ -139,6 +144,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # quit action
         self.button_quit = QAction("Quit", self)
+        self.button_quit.setShortcut('Ctrl+Q')
         self.button_quit.setStatusTip("Quit application")
         self.button_quit.triggered.connect(self.close)
 
