@@ -171,10 +171,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.table.setSelectionMode(QtWidgets.QTableView.SingleSelection)
 
-        #header = self.table.horizontalHeader()
-        #for i in range(0, header.count() - 1):
-        #    header.setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeToContents)
-
         self.setCentralWidget(self.table)
         self.setWindowTitle(app_title)
         self.setMinimumSize(400, 250)
@@ -232,6 +228,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QMessageBox.warning(self, 'Error', f"Error loading the file:\n {file_name}")
 
     def onResizeColumns(self):
+        """Resize columns action, run from menu View->Resize columns"""
         self.table.resizeColumnsToContents()
 
     def onToolbarCloseButtonClick(self):
@@ -274,17 +271,18 @@ class MainWindow(QtWidgets.QMainWindow):
             event.ignore()
 
     def about(self):
-        """ show About dialog (info about app)"""
+        """ Show About dialog (info about application)"""
         dlg = AboutDialog()
         dlg.exec_()
 
     def openRecentFile(self):
-        """ open file from recent list action """
+        """ Open file from recent list action """
         action = self.sender()
         if action:
             self.onOpenRecentFile(action.data())
 
     def saveRecent(self, file_name):
+        """ Save information about currently opened file, update recent list"""
         settings = QSettings('CSV_Viewer', 'CSV_Viewer')
         files = settings.value('recentFileList', [])
 
@@ -303,7 +301,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 widget.updateRecentFileActions()
 
     def updateRecentFileActions(self):
-        """ update recent file list """
+        """ Update recent file list """
         settings = QSettings('CSV_Viewer', 'CSV_Viewer')
         files = settings.value('recentFileList', [])
 
@@ -321,7 +319,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.separatorAct.setVisible((numRecentFiles > 0))
 
     def strippedName(self, fullFileName):
-        """ return only file name, without path"""
+        """ Return only file name, without path"""
         return QFileInfo(fullFileName).fileName()
 
 

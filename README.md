@@ -3,7 +3,7 @@ CSV files viewer
 
 ## Requirement 
 -   PyQt5
--   Python3.x  
+-   Python 3.x  
 -   Pandas 
 
 ## Command line usage: 
