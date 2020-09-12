@@ -119,6 +119,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.addAction(self.button_sqlite)
         self.button_sqlite.setEnabled(False)
 
+        # export to html action
+        style_html = self.toolbar.style()
+        icon = style_html.standardIcon(QStyle.SP_FileLinkIcon)
+        self.button_html = QAction(icon, "HTML", self)
+        self.button_html.setStatusTip("Export data to HTML file")
+        self.button_html.triggered.connect(self.onExportHTML)
+        self.toolbar.addAction(self.button_html)
+        self.button_html.setEnabled(False)
+
         # close action
         style_close = self.toolbar.style()
         icon = style_close.standardIcon(QStyle.SP_DialogCloseButton)
@@ -170,6 +179,7 @@ class MainWindow(QtWidgets.QMainWindow):
         export_menu = menu.addMenu("&Export")
         export_menu.addAction(self.button_xlsx)
         export_menu.addAction(self.button_sqlite)
+        export_menu.addAction(self.button_html)
 
         help_menu = menu.addMenu("&Help")
         help_menu.addAction(self.button_about)
@@ -241,6 +251,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.button_resize.setEnabled(True)
             self.button_xlsx.setEnabled(True)
             self.button_sqlite.setEnabled(True)
+            self.button_html.setEnabled(True)
             self.setWindowTitle(self.app_title + ": " + file_name)
         except Exception as e:
             QMessageBox.warning(self, 'Error', f"Error loading the file:\n {file_name}")
@@ -259,6 +270,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_resize.setEnabled(False)
         self.button_xlsx.setEnabled(False)
         self.button_sqlite.setEnabled(False)
+        self.button_html.setEnabled(False)
         self.labelStatus.setText("Rows: 0 Cols: 0")
 
     def onToolbarSummaryButtonClick(self):
@@ -289,6 +301,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if file_name:
             engine = create_engine(f'sqlite:///{file_name}', echo=False)
             self.df.to_sql('csv_data', con=engine)
+
+    def onExportHTML(self):
+        """ Export data to HTML file """
+        file_name, _ = QFileDialog.getSaveFileName(self, 'Export to HTML file', '', ".html(*.html)")
+        if file_name:
+            self.df.to_html(file_name)
 
     def closeEvent(self, event):
         """ Quit application, ask user before """
