@@ -6,6 +6,7 @@ CSV files viewer
 -   Python 3.x  
 -   Pandas 
 -   XlsWriter
+-   SQLAlchemy
 
 ## Command line usage: 
 
