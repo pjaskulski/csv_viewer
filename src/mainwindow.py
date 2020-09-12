@@ -2,7 +2,7 @@ import io
 import numpy as np
 import pandas as pd
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel
+from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QFileDialog
 from PyQt5.QtCore import Qt, QSize, QSettings, QFileInfo
 from summary import SummaryDialog
 from fileparam import ParameterDialog
@@ -95,10 +95,19 @@ class MainWindow(QtWidgets.QMainWindow):
         style_resize = self.toolbar.style()
         icon = style_resize.standardIcon(QStyle.SP_BrowserReload)
         self.button_resize = QAction(icon, "Resize columns", self)
-        self.button_resize.setStatusTip("Resize columns width to content ")
+        self.button_resize.setStatusTip("Resize columns width to content")
         self.button_resize.triggered.connect(self.onResizeColumns)
         self.toolbar.addAction(self.button_resize)
         self.button_resize.setEnabled(False)
+
+        # export to xlsx action
+        style_xlsx = self.toolbar.style()
+        icon = style_xlsx.standardIcon(QStyle.SP_FileLinkIcon)
+        self.button_xlsx = QAction(icon, "Xlsx", self)
+        self.button_xlsx.setStatusTip("Export data to xlsx file")
+        self.button_xlsx.triggered.connect(self.onExportXlsx)
+        self.toolbar.addAction(self.button_xlsx)
+        self.button_xlsx.setEnabled(False)
 
         # close action
         style_close = self.toolbar.style()
@@ -147,6 +156,9 @@ class MainWindow(QtWidgets.QMainWindow):
         view_menu.addAction(self.button_info)
         view_menu.addSeparator()
         view_menu.addAction(self.button_resize)
+
+        export_menu = menu.addMenu("&Export")
+        export_menu.addAction(self.button_xlsx)
 
         help_menu = menu.addMenu("&Help")
         help_menu.addAction(self.button_about)
@@ -216,6 +228,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.button_summary.setEnabled(True)
             self.button_info.setEnabled(True)
             self.button_resize.setEnabled(True)
+            self.button_xlsx.setEnabled(True)
             self.setWindowTitle(self.app_title + ": " + file_name)
         except Exception as e:
             QMessageBox.warning(self, 'Error', f"Error loading the file:\n {file_name}")
@@ -232,6 +245,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_summary.setEnabled(False)
         self.button_info.setEnabled(False)
         self.button_resize.setEnabled(False)
+        self.button_xlsx.setEnabled(False)
         self.labelStatus.setText("Rows: 0 Cols: 0")
 
     def onToolbarSummaryButtonClick(self):
@@ -249,6 +263,12 @@ class MainWindow(QtWidgets.QMainWindow):
         dlg = InfoDialog(tmp)
         dlg.setWindowTitle("Info")
         dlg.exec_()
+
+    def onExportXlsx(self):
+        """ Export data to xlsx file """
+        file_name, _ = QFileDialog.getSaveFileName(self, 'Export to file', '', ".xlsx(*.xlsx)")
+        if file_name:
+            self.df.to_excel(file_name, engine='xlsxwriter')
 
     def closeEvent(self, event):
         """ Quit application, ask user before """

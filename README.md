@@ -5,6 +5,7 @@ CSV files viewer
 -   PyQt5
 -   Python 3.x  
 -   Pandas 
+-   XlsWriter
 
 ## Command line usage: 
 
