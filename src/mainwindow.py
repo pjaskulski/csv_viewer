@@ -32,15 +32,15 @@ class TableModel(QtCore.QAbstractTableModel):
             if pd.isna(self._data.iloc[index.row(), index.column()]):
                 return QtGui.QColor("red")
 
-    def rowCount(self, index):
+    def rowCount(self, index) -> int:
         # the length of csv file (rows)
         return self._data.shape[0]
 
-    def columnCount(self, index):
+    def columnCount(self, index) -> int:
         # length of csv file (columns)
         return self._data.shape[1]
 
-    def headerData(self, section, orientation, role):
+    def headerData(self, section: int, orientation, role: int) -> str:
         # header data (first row and first column)
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
@@ -208,7 +208,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setMinimumSize(400, 250)
         self.setGeometry(200, 100, 1000, 600)
 
-    def onToolbarOpenButtonClick(self):
+    def onToolbarOpenButtonClick(self) -> None:
         """ Show open dialog """
 
         dlg = ParameterDialog()
@@ -224,7 +224,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.saveRecent(file_name)
             self.open_csv_file(file_name, separator, decimal)
 
-    def onOpenRecentFile(self, file_name, sep=',', decimal='.'):
+    def onOpenRecentFile(self, file_name: str, sep=',', decimal='.') -> None:
         """ Open file from recent list, show open dialog """
 
         dlg = ParameterDialog(file_name, sep, decimal)
@@ -240,7 +240,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.saveRecent(file_name)
             self.open_csv_file(file_name, separator, decimal)
 
-    def open_csv_file(self, file_name, sep=',', decimal="."):
+    def open_csv_file(self, file_name: str, sep=',', decimal=".") -> None:
         """ Open csv file, load to tableview, set statusbar, enable close icon"""
         try:
             data = pd.read_csv(file_name, sep=sep, decimal=decimal)
@@ -262,11 +262,11 @@ class MainWindow(QtWidgets.QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, 'Error', f"Error loading the file:\n {file_name}")
 
-    def onResizeColumns(self):
+    def onResizeColumns(self) -> None:
         """Resize columns action, run from menu View->Resize columns"""
         self.table.resizeColumnsToContents()
 
-    def onToolbarCloseButtonClick(self):
+    def onToolbarCloseButtonClick(self) -> None:
         """Clear tableview, set statusbar and disable toolbar close, summary and info icons"""
         self.table.setModel(None)
         self.df = None
@@ -279,42 +279,41 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_html.setEnabled(False)
         self.labelStatus.setText("Rows: 0 Cols: 0")
 
-    def onToolbarSummaryButtonClick(self):
+    def onToolbarSummaryButtonClick(self) -> None:
         """Show Summary dialog"""
         dlg = SummaryDialog(self.df.describe())
         dlg.setWindowTitle("Summary")
         dlg.exec_()
 
-    def onToolbarInfoButtonClick(self):
+    def onToolbarInfoButtonClick(self) -> None:
         """Show Info dialog"""
-        buf = io.StringIO()
-        self.df.info(buf=buf)
-        tmp = buf.getvalue()
+        # buf = io.StringIO()
+        # self.df.info(buf=buf)
+        # tmp = buf.getvalue()
 
-        dlg = InfoDialog(tmp)
+        dlg = InfoDialog(self.df)
         dlg.setWindowTitle("Info")
         dlg.exec_()
 
-    def onExportXlsx(self):
+    def onExportXlsx(self) -> None:
         """ Export data to xlsx file """
         file_name, _ = QFileDialog.getSaveFileName(self, 'Export to xlsx', '', ".xlsx(*.xlsx)")
         if file_name:
             self.df.to_excel(file_name, engine='xlsxwriter')
 
-    def onExportSQLite(self):
-        """ Export data to sqlite database """
+    def onExportSQLite(self) -> None:
         file_name, _ = QFileDialog.getSaveFileName(self, 'Export to sqlite db', '', ".sqlite(*.sqlite)")
         if file_name:
             engine = create_engine(f'sqlite:///{file_name}', echo=False)
             self.df.to_sql('csv_data', con=engine)
 
-    def onExportHTML(self):
+    def onExportHTML(self) -> None:
         """ Export data to HTML file """
         file_name, _ = QFileDialog.getSaveFileName(self, 'Export to HTML file', '', ".html(*.html)")
         if file_name:
             self.df.to_html(file_name)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
         """ Quit application, ask user before """
         result = QMessageBox.question(
             self, self.app_title,
@@ -327,18 +326,18 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
-    def about(self):
+    def about(self) -> None:
         """ Show About dialog (info about application)"""
         dlg = AboutDialog()
         dlg.exec_()
 
-    def openRecentFile(self):
+    def openRecentFile(self) -> None:
         """ Open file from recent list action """
         action = self.sender()
         if action:
             self.onOpenRecentFile(action.data())
 
-    def saveRecent(self, file_name):
+    def saveRecent(self, file_name) -> None:
         """ Save information about currently opened file, update recent list"""
         settings = QSettings('CSV_Viewer', 'CSV_Viewer')
         files = settings.value('recentFileList', [])
@@ -357,7 +356,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if isinstance(widget, MainWindow):
                 widget.updateRecentFileActions()
 
-    def updateRecentFileActions(self):
+    def updateRecentFileActions(self) -> None:
         """ Update recent file list """
         settings = QSettings('CSV_Viewer', 'CSV_Viewer')
         files = settings.value('recentFileList', [])
@@ -375,7 +374,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.separatorAct.setVisible((numRecentFiles > 0))
 
-    def strippedName(self, fullFileName):
+    def strippedName(self, fullFileName: str) -> str:
         """ Return only file name, without path"""
         return QFileInfo(fullFileName).fileName()
-

@@ -1,7 +1,7 @@
 from random import randint
 
 
-def gen_int(filename, rows, cols):
+def gen_int(filename: str, rows: int, cols: int) -> None:
     """Generuje plik z danymi typu integer"""
     with open(filename, "w") as f:
         # column name
