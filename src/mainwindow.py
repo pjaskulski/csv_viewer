@@ -47,7 +47,7 @@ class TableModel(QtCore.QAbstractTableModel):
                 return str(self._data.columns[section])
 
             if orientation == Qt.Vertical:
-                return str(self._data.index[section])
+                return str(self._data.index[section] + 1)
 
 
 class MainWindow(QtWidgets.QMainWindow):
