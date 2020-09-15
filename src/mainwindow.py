@@ -9,6 +9,7 @@ from summary import SummaryDialog
 from fileparam import ParameterDialog
 from about import AboutDialog
 from info import InfoDialog
+import dataload
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -132,6 +133,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.addAction(self.button_html)
         self.button_html.setEnabled(False)
 
+        # import data from world bank climate api
+        style_api = self.toolbar.style()
+        icon = style_api.standardIcon(QStyle.SP_BrowserReload)
+        self.button_api = QAction(icon, "API", self)
+        self.button_api.setStatusTip("Import data from World Bank Climate API")
+        self.button_api.triggered.connect(self.onImportFromAPI)
+        self.toolbar.addAction(self.button_api)
+        self.button_api.setEnabled(True)
+
         # close action
         style_close = self.toolbar.style()
         icon = style_close.standardIcon(QStyle.SP_DialogCloseButton)
@@ -186,6 +196,9 @@ class MainWindow(QtWidgets.QMainWindow):
         export_menu.addAction(self.button_xlsx)
         export_menu.addAction(self.button_sqlite)
         export_menu.addAction(self.button_html)
+
+        import_menu = menu.addMenu("&Import")
+        import_menu.addAction(self.button_api)
 
         help_menu = menu.addMenu("&Help")
         help_menu.addAction(self.button_about)
@@ -312,6 +325,17 @@ class MainWindow(QtWidgets.QMainWindow):
         file_name, _ = QFileDialog.getSaveFileName(self, 'Export to HTML file', '', ".html(*.html)")
         if file_name:
             self.df.to_html(file_name)
+
+    def onImportFromAPI(self) -> None:
+        res, text = dataload.import_data_climate()
+        if res:
+            file_name, _ = QFileDialog.getSaveFileName(self, 'Save data to CSV', '', ".csv(*.csv)")
+            if file_name:
+                with open(file_name, "w") as f:
+                    f.write(text)
+                self.onOpenRecentFile(file_name)
+        else:
+            QMessageBox.warning(self, "Error", text)
 
     def closeEvent(self, event) -> None:
         """ Quit application, ask user before """
