@@ -44,12 +44,12 @@ class ApiDialog(QDialog):
         self.setLayout(self.layout)
 
     def validate(self):
-        if self.filename.text() == '':
-            QMessageBox.about(self, 'Error', 'Path to save CSV file is mandatory.')
-            self.filename.setFocus()
-        elif self.address.text() == '':
+        if self.address.text() == '':
             QMessageBox.about(self, 'Error', 'API address is mandatory.')
             self.address.setFocus()
+        elif self.filename.text() == '':
+            QMessageBox.about(self, 'Error', 'Path to save CSV file is mandatory.')
+            self.filename.setFocus()
         else:
             self.accept()
 
