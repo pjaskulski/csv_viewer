@@ -89,6 +89,7 @@ class ParameterDialog(QDialog):
     def validate(self):
         if self.filename.text() == '':
             QMessageBox.about(self, 'Error', 'Path to CSV file is mandatory.')
+            self.filename.setFocus()
         else:
             self.accept()
 

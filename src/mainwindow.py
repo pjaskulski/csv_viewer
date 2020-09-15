@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, 
 from PyQt5.QtCore import Qt, QSize, QSettings, QFileInfo
 from summary import SummaryDialog
 from fileparam import ParameterDialog
+from apiparam import ApiDialog
 from about import AboutDialog
 from info import InfoDialog
 import dataload
@@ -327,15 +328,22 @@ class MainWindow(QtWidgets.QMainWindow):
             self.df.to_html(file_name)
 
     def onImportFromAPI(self) -> None:
-        res, text = dataload.import_data_climate()
-        if res:
-            file_name, _ = QFileDialog.getSaveFileName(self, 'Save data to CSV', '', ".csv(*.csv)")
-            if file_name:
+        dlg = ApiDialog()
+        dlg.setWindowTitle("Get data by API")
+        if dlg.exec_():
+            file_name = dlg.filename.text()
+            address = dlg.address.text()
+        else:
+            file_name = None
+
+        if file_name and address:
+            res, text = dataload.import_data_by_api(address)
+            if res:
                 with open(file_name, "w") as f:
                     f.write(text)
                 self.onOpenRecentFile(file_name)
-        else:
-            QMessageBox.warning(self, "Error", text)
+            else:
+                QMessageBox.warning(self, "Error", text)
 
     def closeEvent(self, event) -> None:
         """ Quit application, ask user before """
