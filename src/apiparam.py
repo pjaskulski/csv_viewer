@@ -25,7 +25,11 @@ class ApiDialog(QDialog):
         self.layout_grid.addWidget(label_addres, 0, 0)
         self.address = QLineEdit()
         self.address.setText('')
-        self.layout_grid.addWidget(self.address, 0, 1, 1, 2) # columnSpan = 2
+        self.layout_grid.addWidget(self.address, 0, 1)
+        self.btn_api = QPushButton("...")
+        self.btn_api.setMaximumWidth(25)
+        self.btn_api.clicked.connect(self.onBtnApiClicked)
+        self.layout_grid.addWidget(self.btn_api, 0, 2)
 
         # file name to save
         label_fname = QLabel("Path:")
@@ -56,3 +60,6 @@ class ApiDialog(QDialog):
             self, "Save CSV file...", "", "CSV (*.csv);;All Files (*)")
         if file_name:
             self.filename.setText(file_name)
+
+    def onBtnApiClicked(self):
+        pass

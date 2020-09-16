@@ -60,7 +60,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.app_title = app_title
         self.setMinimumSize(600, 300)
         self.df = None
+        self.accuracy = 2
         self.recentFileActs = []
+
+        # settings
+        self.settings = QtCore.QSettings('CSV_Viewer', 'CSV_Viewer')
+        self.accuracy = self.settings.value('accuracy', self.accuracy, int)
+        # self.settings.setValue('accuracy', self.accuracy)
 
         # toolbar
         self.toolbar = QToolBar("MainToolbar")
@@ -159,6 +165,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_quit.setStatusTip("Quit application")
         self.button_quit.triggered.connect(self.close)
 
+        # toolbar show/hide action
+        self.button_tool = QAction("Show/Hide toolbar", self)
+        self.button_tool.setShortcut('Ctrl+T')
+        self.button_tool.setStatusTip("Show or hide toolbar")
+        self.button_tool.triggered.connect(self.showToolbar)
+
         # about action
         style_about = self.toolbar.style()
         icon = style_about.standardIcon(QStyle.SP_FileDialogInfoView)
@@ -192,6 +204,8 @@ class MainWindow(QtWidgets.QMainWindow):
         view_menu.addAction(self.button_info)
         view_menu.addSeparator()
         view_menu.addAction(self.button_resize)
+        view_menu.addSeparator()
+        view_menu.addAction(self.button_tool)
 
         export_menu = menu.addMenu("&Export")
         export_menu.addAction(self.button_xlsx)
@@ -409,3 +423,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def strippedName(self, fullFileName: str) -> str:
         """ Return only file name, without path"""
         return QFileInfo(fullFileName).fileName()
+
+    def showToolbar(self):
+        """ show / hide main toolbar"""
+        if self.toolbar.isHidden():
+            self.toolbar.show()
+        else:
+            self.toolbar.hide()
