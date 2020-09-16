@@ -19,6 +19,6 @@ def import_data_by_api(address: str):
     except requests.exceptions.Timeout as errt:
         return False, "Timeout Error: " + str(errt)
     except requests.exceptions.RequestException as err:
-        return "Error: " + str(err)
+        return False, "Error: " + str(err)
 
     return True, resp.text

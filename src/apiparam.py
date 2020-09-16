@@ -1,6 +1,103 @@
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QDialog, QMessageBox, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, \
-    QPushButton, QRadioButton, QFileDialog, QGroupBox, QSpacerItem, QGridLayout
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtWidgets import QDialog, QMessageBox, QDialogButtonBox, QVBoxLayout, QLabel, QLineEdit, \
+    QPushButton, QFileDialog, QGroupBox, QGridLayout, QTableView, QAction, QStyle, QHBoxLayout, QSpacerItem, QSizePolicy
+from PyQt5.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
+import os
+
+
+class ApiDatabaseDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.setMinimumSize(QSize(800, 400))
+
+        config_folder = os.path.join(os.path.expanduser("~"), '.config', 'CSV_Viewer')
+        os.makedirs(config_folder, exist_ok=True)
+        db_file = "apilinks.sqlite"
+        db_path = os.path.join(config_folder, db_file)
+
+        self.db = QSqlDatabase("QSQLITE")
+        self.db.setDatabaseName(db_path)
+        if self.db.open():
+            if os.path.getsize(db_path) == 0:
+                query = QSqlQuery(db=self.db)
+                query.exec_("CREATE TABLE links(address TEXT)")
+                demo = "http://climatedataapi.worldbank.org/climateweb/rest/v1/country/cru/tas/year/POL.csv"
+                query.exec_(f"INSERT INTO links VALUES ('{demo}')")
+                self.db.commit()
+        else:
+            QMessageBox.warning(self, "Error", "API links database not open.")
+
+        self.table = QTableView()
+        self.model = QSqlTableModel(db=self.db)
+        self.model.setTable('links')
+        self.model.setEditStrategy(QSqlTableModel.OnFieldChange)
+        self.model.select()
+
+        # set headers
+        column_titles = {"address": "API Address"}
+        for n, t in column_titles.items():
+            idx = self.model.fieldIndex(n)
+            self.model.setHeaderData(idx, Qt.Horizontal, t)
+
+        self.table.setModel(self.model)
+        self.table.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
+        self.table.setSelectionMode(QtWidgets.QTableView.SingleSelection)
+        self.table.setColumnWidth(0, 750)
+        self.table.selectRow(0)
+        self.table.setFocus()
+
+        self.layout = QVBoxLayout()
+        QBtn = QDialogButtonBox.Ok
+        self.buttonBox = QDialogButtonBox(QBtn)
+
+        style_add = self.buttonBox.style()
+        icon = style_add.standardIcon(QStyle.SP_DialogYesButton)
+        self.button_add = QPushButton(icon, "&Add")
+        self.button_add.setStatusTip("Add new api link")
+        self.button_add.clicked.connect(self.add_link)
+
+        style_del = self.buttonBox.style()
+        icon = style_del.standardIcon(QStyle.SP_DialogNoButton)
+        self.button_del = QPushButton(icon, "&Delete")
+        self.button_del.setStatusTip("Delete api link")
+        self.button_del.clicked.connect(self.del_link)
+
+        self.buttonBox.accepted.connect(self.accept)
+
+        self.layout.addWidget(self.table)
+        layout_btn = QHBoxLayout()
+        layout_btn.addWidget(self.button_add)
+        layout_btn.addWidget(self.button_del)
+        layout_btn.addSpacerItem(QSpacerItem(150, 10, QSizePolicy.Expanding))
+        layout_btn.addWidget(self.buttonBox)
+
+        self.layout.addLayout(layout_btn)
+        self.setLayout(self.layout)
+
+    def closeEvent(self, event) -> None:
+        """ Quit dialog """
+        self.db.close()
+
+    def add_link(self):
+        self.model.insertRows(self.model.rowCount(), 1)
+        self.table.setFocus()
+        self.table.selectRow(self.model.rowCount() - 1)
+        index = self.table.currentIndex()
+        self.table.edit(index)
+
+    def del_link(self):
+        if self.model.rowCount() > 0:
+            index = self.table.currentIndex()
+            self.model.removeRow(index.row())
+            self.model.submitAll()
+            self.table.setRowHidden(index.row(), True)
+            if index.row() == 0:
+                current = 0
+            else:
+                current = index.row() - 1
+            self.table.selectRow(current)
 
 
 class ApiDialog(QDialog):
@@ -62,4 +159,8 @@ class ApiDialog(QDialog):
             self.filename.setText(file_name)
 
     def onBtnApiClicked(self):
-        pass
+        dlg = ApiDatabaseDialog()
+        dlg.setWindowTitle("API database")
+        if dlg.exec_():
+            index = dlg.table.currentIndex()
+            self.address.setText(dlg.model.itemData(index).get(0))
