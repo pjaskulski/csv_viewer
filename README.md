@@ -32,3 +32,5 @@ CSV files viewer
 ![Screen](/doc/csv_viewer4.png)
 
 ![Screen](/doc/csv_viewer5.png)
+
+![Screen](/doc/csv_viewer6.png)
