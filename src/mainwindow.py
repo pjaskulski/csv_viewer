@@ -329,7 +329,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onImportFromAPI(self) -> None:
         dlg = ApiDialog()
-        dlg.setWindowTitle("Get data by API")
+        dlg.setWindowTitle("Import a Data CSV via API")
         if dlg.exec_():
             file_name = dlg.filename.text()
             address = dlg.address.text()

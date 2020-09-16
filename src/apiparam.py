@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QDialog, QMessageBox, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, \
-    QPushButton, QRadioButton, QFileDialog, QGroupBox, QSpacerItem
+    QPushButton, QRadioButton, QFileDialog, QGroupBox, QSpacerItem, QGridLayout
 
 
 class ApiDialog(QDialog):
@@ -14,31 +14,29 @@ class ApiDialog(QDialog):
 
         self.layout = QVBoxLayout()
 
-        # api address to get
-        groupbox_api = QGroupBox("API:")
-        self.layout.addWidget(groupbox_api)
-        self.layout_api = QHBoxLayout()
-        groupbox_api.setLayout(self.layout_api)
+        # group box
+        groupbox = QGroupBox("API address and CSV file path:")
+        self.layout.addWidget(groupbox)
+        self.layout_grid = QGridLayout()
+        groupbox.setLayout(self.layout_grid)
 
-        self.layout_api.addWidget(QLabel("Address:"))
+        # API address
+        label_addres = QLabel("Address:")
+        self.layout_grid.addWidget(label_addres, 0, 0)
         self.address = QLineEdit()
         self.address.setText('')
-        self.layout_api.addWidget(self.address)
+        self.layout_grid.addWidget(self.address, 0, 1, 1, 2) # columnSpan = 2
 
         # file name to save
-        groupbox_file = QGroupBox("Path to CSV file:")
-        self.layout.addWidget(groupbox_file)
-        self.layout_file = QHBoxLayout()
-        groupbox_file.setLayout(self.layout_file)
-
-        self.layout_file.addWidget(QLabel("Filename:"))
+        label_fname = QLabel("Path:")
+        self.layout_grid.addWidget(label_fname, 1, 0)
         self.filename = QLineEdit()
         self.filename.setText('')
-        self.layout_file.addWidget(self.filename)
+        self.layout_grid.addWidget(self.filename, 1, 1)
         self.btn_file = QPushButton("...")
         self.btn_file.setMaximumWidth(25)
         self.btn_file.clicked.connect(self.onBtnFileClicked)
-        self.layout_file.addWidget(self.btn_file)
+        self.layout_grid.addWidget(self.btn_file, 1, 2)
 
         self.layout.addWidget(self.buttonBox)
         self.setLayout(self.layout)
