@@ -140,6 +140,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.addAction(self.button_html)
         self.button_html.setEnabled(False)
 
+        # export to CSV action
+        style_csv = self.toolbar.style()
+        icon = style_csv.standardIcon(QStyle.SP_FileLinkIcon)
+        self.button_csv = QAction(icon, "CSV", self)
+        self.button_csv.setStatusTip("Export data to CSV file")
+        self.button_csv.triggered.connect(self.onExportCSV)
+        self.toolbar.addAction(self.button_csv)
+        self.button_csv.setEnabled(False)
+
         # import data from world bank climate api
         style_api = self.toolbar.style()
         icon = style_api.standardIcon(QStyle.SP_DialogSaveButton)
@@ -231,6 +240,7 @@ class MainWindow(QtWidgets.QMainWindow):
         export_menu.addAction(self.button_xlsx)
         export_menu.addAction(self.button_sqlite)
         export_menu.addAction(self.button_html)
+        export_menu.addAction(self.button_csv)
 
         import_menu = menu.addMenu("&Import")
         import_menu.addAction(self.button_api)
@@ -306,6 +316,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.button_xlsx.setEnabled(True)
             self.button_sqlite.setEnabled(True)
             self.button_html.setEnabled(True)
+            self.button_csv.setEnabled(True)
             self.button_nan.setEnabled(True)
             self.setWindowTitle(self.app_title + ": " + file_name)
         except Exception as e:
@@ -326,6 +337,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_xlsx.setEnabled(False)
         self.button_sqlite.setEnabled(False)
         self.button_html.setEnabled(False)
+        self.button_csv.setEnabled(False)
         self.button_nan.setEnabled(False)
         self.setWindowTitle(self.app_title)
         self.labelStatus.setText("Rows: 0 Cols: 0")
@@ -363,6 +375,12 @@ class MainWindow(QtWidgets.QMainWindow):
         file_name, _ = QFileDialog.getSaveFileName(self, 'Export to HTML file', '', ".html(*.html)")
         if file_name:
             self.df.to_html(file_name)
+
+    def onExportCSV(self) -> None:
+        """ Export data to new CSV file """
+        file_name, _ = QFileDialog.getSaveFileName(self, 'Export to CSV file', '', ".csv(*.csv)")
+        if file_name:
+            self.df.to_csv(file_name, sep=',', decimal='.')
 
     def onImportFromAPI(self) -> None:
         dlg = ApiDialog()
