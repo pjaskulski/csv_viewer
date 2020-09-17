@@ -59,7 +59,7 @@ class ApiDatabaseDialog(QDialog):
         self.button_add.clicked.connect(self.add_link)
 
         style_del = self.buttonBox.style()
-        icon = style_del.standardIcon(QStyle.SP_DialogNoButton)
+        icon = style_del.standardIcon(QStyle.SP_DialogCloseButton)
         self.button_del = QPushButton(icon, "&Delete")
         self.button_del.setStatusTip("Delete api link")
         self.button_del.clicked.connect(self.del_link)

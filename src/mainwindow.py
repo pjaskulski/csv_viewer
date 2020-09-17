@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QFileDialog
+from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QFileDialog, QInputDialog
 from PyQt5.QtCore import Qt, QSize, QSettings, QFileInfo
 from summary import SummaryDialog
 from fileparam import ParameterDialog
@@ -14,16 +14,17 @@ import dataload
 
 
 class TableModel(QtCore.QAbstractTableModel):
-    def __init__(self, data):
+    def __init__(self, data, round_num):
         super().__init__()
         self._data = data
+        self.round_num = round_num
 
     def data(self, index, role):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
 
             if np.isreal(value) and not isinstance(value, bool):
-                return f"{value:.2f}"  # temporary all numbers as float
+                return f"{value:.{self.round_num}f}"  # temporary all numbers as float
             else:
                 return str(value)
 
@@ -60,13 +61,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.app_title = app_title
         self.setMinimumSize(600, 300)
         self.df = None
-        self.accuracy = 2
+        self.round_num = 2
         self.recentFileActs = []
 
         # settings
         self.settings = QtCore.QSettings('CSV_Viewer', 'CSV_Viewer')
-        self.accuracy = self.settings.value('accuracy', self.accuracy, int)
-        # self.settings.setValue('accuracy', self.accuracy)
+        self.round_num = self.settings.value('round_numbers', self.round_num, int)
 
         # toolbar
         self.toolbar = QToolBar("MainToolbar")
@@ -142,7 +142,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # import data from world bank climate api
         style_api = self.toolbar.style()
-        icon = style_api.standardIcon(QStyle.SP_BrowserReload)
+        icon = style_api.standardIcon(QStyle.SP_DialogSaveButton)
         self.button_api = QAction(icon, "API", self)
         self.button_api.setStatusTip("Import data from World Bank Climate API")
         self.button_api.triggered.connect(self.onImportFromAPI)
@@ -171,6 +171,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_tool.setStatusTip("Show or hide toolbar")
         self.button_tool.triggered.connect(self.showToolbar)
 
+        # settings action
+        style_settings = self.toolbar.style()
+        icon = style_settings.standardIcon(QStyle.SP_ComputerIcon)
+        self.button_settings = QAction(icon, "Settings", self)
+        self.button_settings.setStatusTip("Application settings")
+        self.button_settings.triggered.connect(self.onSettings)
+        self.toolbar.addAction(self.button_settings)
+        self.button_settings.setEnabled(True)
+
         # about action
         style_about = self.toolbar.style()
         icon = style_about.standardIcon(QStyle.SP_FileDialogInfoView)
@@ -191,6 +200,8 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu = menu.addMenu("&File")
         file_menu.addAction(self.button_open)
         file_menu.addAction(self.button_close)
+        file_menu.addSeparator()
+        file_menu.addAction(self.button_settings)
         self.separatorAct = file_menu.addSeparator()
 
         for i in range(MainWindow.MaxRecentFiles):
@@ -273,7 +284,7 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             data = pd.read_csv(file_name, sep=sep, decimal=decimal)
             self.df = data
-            self.model = TableModel(data)
+            self.model = TableModel(self.df, self.round_num)
             self.labelStatus.setText(f"Rows: {data.shape[0]} Cols: {data.shape[1]}")
             self.table.setModel(self.model)
             if data.shape[0] > 0:
@@ -430,3 +441,15 @@ class MainWindow(QtWidgets.QMainWindow):
             self.toolbar.show()
         else:
             self.toolbar.hide()
+
+    def onSettings(self):
+        """ Round numbers to """
+        n, result = QInputDialog.getInt(self, "Settings", "Round numbers to:", self.round_num, 0, 10, 1)
+        if result and n != self.round_num:
+            self.round_num = n
+            self.settings.setValue('round_numbers', self.round_num)
+            if self.df.shape[0] > 0:
+                index = self.table.currentIndex()
+                self.model = TableModel(self.df, self.round_num)
+                self.table.setModel(self.model)
+                self.table.selectRow(index.row())
