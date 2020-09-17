@@ -7,6 +7,7 @@ CSV files viewer
 -   Pandas 
 -   XlsWriter
 -   SQLAlchemy
+-   requests
 
 ## Command line usage: 
 
