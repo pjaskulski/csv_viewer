@@ -3,14 +3,52 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QFileDialog, QInputDialog
-from PyQt5.QtCore import Qt, QSize, QSettings, QFileInfo
+from PyQt5.QtWidgets import QToolBar, QAction, QStatusBar, QStyle, QMessageBox, QLabel, QFileDialog, QInputDialog,\
+    QProgressBar
+from PyQt5.QtCore import Qt, QSize, QSettings, QFileInfo, QRunnable, QThreadPool, pyqtSlot, QObject, pyqtSignal
 from summary import SummaryDialog
 from fileparam import ParameterDialog
 from apiparam import ApiDialog
 from about import AboutDialog
 from info import InfoDialog
 import dataload
+import time
+
+
+class WorkerSignals(QObject):
+    progress = pyqtSignal(int)
+    status = pyqtSignal(bool)
+
+
+class MarkdownWorker(QRunnable):
+    """ export worker (thread) """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+    @pyqtSlot()
+    def run(self):
+        """ run thread worker """
+        file_name = self.args[0]
+        df = self.args[1]
+        self.signals.status.emit(True)
+        with open(file_name, 'w') as f:
+            size = df.shape[0]
+            counter = 0
+            for row in df.itertuples():
+                counter += 1
+                line = " | "
+                for item in row:
+                    line += str(item) + " | "
+                f.write(line + '\n')
+                export_progress = int(100 * (counter/size))
+                self.signals.progress.emit(export_progress)
+                time.sleep(0.001)
+
+        self.signals.status.emit(False)
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -58,6 +96,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, app_title):
         super().__init__()
+        self.progress = QProgressBar()
+        self.threadpool = QThreadPool()
         self.app_title = app_title
         self.setMinimumSize(600, 300)
         self.df = None
@@ -142,6 +182,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_csv.setStatusTip("Export data to CSV file")
         self.button_csv.triggered.connect(self.onExportCSV)
         self.toolbar.addAction(self.button_csv)
+
+        # export to Markdown action
+        style_mark = self.toolbar.style()
+        icon = style_mark.standardIcon(QStyle.SP_FileLinkIcon)
+        self.button_mark = QAction(icon, "Markdown", self)
+        self.button_mark.setStatusTip("Export data to Markdown file")
+        self.button_mark.triggered.connect(self.onExportMarkdown)
+        self.toolbar.addAction(self.button_mark)
 
         # import data from world bank climate api
         style_api = self.toolbar.style()
@@ -235,6 +283,7 @@ class MainWindow(QtWidgets.QMainWindow):
         export_menu.addAction(self.button_sqlite)
         export_menu.addAction(self.button_html)
         export_menu.addAction(self.button_csv)
+        export_menu.addAction(self.button_mark)
 
         import_menu = menu.addMenu("&Import")
         import_menu.addAction(self.button_api)
@@ -249,6 +298,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelStatus = QLabel("Rows: 0 Cols: 0")
         self.my_status.addPermanentWidget(self.labelStatus)
         self.setStatusBar(self.my_status)
+        self.my_status.addPermanentWidget(self.progress)
+        self.progress.hide()
 
         # set TableView
         self.table = QtWidgets.QTableView()
@@ -319,6 +370,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_html.setEnabled(state)
         self.button_csv.setEnabled(state)
         self.button_nan.setEnabled(state)
+        self.button_mark.setEnabled(state)
 
     def onResizeColumns(self) -> None:
         """Resize columns action, run from menu View->Resize columns"""
@@ -484,3 +536,21 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.table.setModel(self.model)
                 self.table.selectRow(0)
                 self.labelStatus.setText(f"Rows: {self.df.shape[0]} Cols: {self.df.shape[1]}")
+
+    def onExportMarkdown(self):
+        """ export to markdown table in thread """
+        file_name, _ = QFileDialog.getSaveFileName(self, 'Export to Markdown file', '', ".txt(*.txt)")
+        if file_name:
+            worker = MarkdownWorker(file_name, self.df)
+            worker.signals.progress.connect(self.update_progress)
+            worker.signals.status.connect(self.update_status)
+            self.threadpool.start(worker)
+
+    def update_progress(self, progress):
+        self.progress.setValue(progress)
+
+    def update_status(self, status):
+        if status:
+            self.progress.show()
+        else:
+            self.progress.hide()
