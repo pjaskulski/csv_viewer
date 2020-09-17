@@ -82,6 +82,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_open.setStatusTip("Open CSV file...")
         self.button_open.triggered.connect(self.onToolbarOpenButtonClick)
         self.toolbar.addAction(self.button_open)
+        self.button_open.setEnabled(True)
 
         # summary action
         style_summary = self.toolbar.style()
@@ -91,7 +92,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_summary.setStatusTip("Show summary for the current file")
         self.button_summary.triggered.connect(self.onToolbarSummaryButtonClick)
         self.toolbar.addAction(self.button_summary)
-        self.button_summary.setEnabled(False)
 
         # info action
         style_info = self.toolbar.style()
@@ -101,7 +101,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_info.setStatusTip("Show summary for the current file")
         self.button_info.triggered.connect(self.onToolbarInfoButtonClick)
         self.toolbar.addAction(self.button_info)
-        self.button_info.setEnabled(False)
 
         # resize action
         style_resize = self.toolbar.style()
@@ -111,7 +110,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_resize.setStatusTip("Resize columns width to content")
         self.button_resize.triggered.connect(self.onResizeColumns)
         self.toolbar.addAction(self.button_resize)
-        self.button_resize.setEnabled(False)
 
         # export to xlsx action
         style_xlsx = self.toolbar.style()
@@ -120,7 +118,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_xlsx.setStatusTip("Export data to xlsx file")
         self.button_xlsx.triggered.connect(self.onExportXlsx)
         self.toolbar.addAction(self.button_xlsx)
-        self.button_xlsx.setEnabled(False)
 
         # export to sqlite action
         style_sqlite = self.toolbar.style()
@@ -129,7 +126,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_sqlite.setStatusTip("Export data to SQLite database")
         self.button_sqlite.triggered.connect(self.onExportSQLite)
         self.toolbar.addAction(self.button_sqlite)
-        self.button_sqlite.setEnabled(False)
 
         # export to html action
         style_html = self.toolbar.style()
@@ -138,7 +134,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_html.setStatusTip("Export data to HTML file")
         self.button_html.triggered.connect(self.onExportHTML)
         self.toolbar.addAction(self.button_html)
-        self.button_html.setEnabled(False)
 
         # export to CSV action
         style_csv = self.toolbar.style()
@@ -147,7 +142,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_csv.setStatusTip("Export data to CSV file")
         self.button_csv.triggered.connect(self.onExportCSV)
         self.toolbar.addAction(self.button_csv)
-        self.button_csv.setEnabled(False)
 
         # import data from world bank climate api
         style_api = self.toolbar.style()
@@ -166,7 +160,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_close.setStatusTip("Close CSV file...")
         self.button_close.triggered.connect(self.onToolbarCloseButtonClick)
         self.toolbar.addAction(self.button_close)
-        self.button_close.setEnabled(False)
 
         # quit action
         self.button_quit = QAction("Quit", self)
@@ -185,7 +178,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_nan.setShortcut('Ctrl+R')
         self.button_nan.setStatusTip("Remove rows with missing values")
         self.button_nan.triggered.connect(self.onRemoveNaN)
-        self.button_nan.setEnabled(False)
 
         # settings action
         style_settings = self.toolbar.style()
@@ -204,6 +196,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_about.triggered.connect(self.about)
         self.toolbar.addAction(self.button_about)
         self.button_about.setEnabled(True)
+
+        self.setButtons(False)
 
         # recent menu action
         for i in range(MainWindow.MaxRecentFiles):
@@ -309,18 +303,22 @@ class MainWindow(QtWidgets.QMainWindow):
             if data.shape[0] > 0:
                 self.table.selectRow(0)
 
-            self.button_close.setEnabled(True)
-            self.button_summary.setEnabled(True)
-            self.button_info.setEnabled(True)
-            self.button_resize.setEnabled(True)
-            self.button_xlsx.setEnabled(True)
-            self.button_sqlite.setEnabled(True)
-            self.button_html.setEnabled(True)
-            self.button_csv.setEnabled(True)
-            self.button_nan.setEnabled(True)
+            self.setButtons(True)
             self.setWindowTitle(self.app_title + ": " + file_name)
         except Exception as e:
             QMessageBox.warning(self, 'Error', f"Error loading the file:\n {file_name}")
+
+    def setButtons(self, state: bool) -> None:
+        """ Set state of buttons/actions """
+        self.button_close.setEnabled(state)
+        self.button_summary.setEnabled(state)
+        self.button_info.setEnabled(state)
+        self.button_resize.setEnabled(state)
+        self.button_xlsx.setEnabled(state)
+        self.button_sqlite.setEnabled(state)
+        self.button_html.setEnabled(state)
+        self.button_csv.setEnabled(state)
+        self.button_nan.setEnabled(state)
 
     def onResizeColumns(self) -> None:
         """Resize columns action, run from menu View->Resize columns"""
@@ -330,15 +328,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """Clear tableview, set statusbar and disable toolbar close, summary and info icons"""
         self.table.setModel(None)
         self.df = None
-        self.button_close.setEnabled(False)
-        self.button_summary.setEnabled(False)
-        self.button_info.setEnabled(False)
-        self.button_resize.setEnabled(False)
-        self.button_xlsx.setEnabled(False)
-        self.button_sqlite.setEnabled(False)
-        self.button_html.setEnabled(False)
-        self.button_csv.setEnabled(False)
-        self.button_nan.setEnabled(False)
+        self.setButtons(False)
         self.setWindowTitle(self.app_title)
         self.labelStatus.setText("Rows: 0 Cols: 0")
 
