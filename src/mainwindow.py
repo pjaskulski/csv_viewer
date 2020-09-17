@@ -171,6 +171,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_tool.setStatusTip("Show or hide toolbar")
         self.button_tool.triggered.connect(self.showToolbar)
 
+        # remove NaN
+        self.button_nan = QAction("Remove NaN", self)
+        self.button_nan.setShortcut('Ctrl+R')
+        self.button_nan.setStatusTip("Remove rows with missing values")
+        self.button_nan.triggered.connect(self.onRemoveNaN)
+        self.button_nan.setEnabled(False)
+
         # settings action
         style_settings = self.toolbar.style()
         icon = style_settings.standardIcon(QStyle.SP_ComputerIcon)
@@ -200,6 +207,8 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu = menu.addMenu("&File")
         file_menu.addAction(self.button_open)
         file_menu.addAction(self.button_close)
+        file_menu.addSeparator()
+        file_menu.addAction(self.button_nan)
         file_menu.addSeparator()
         file_menu.addAction(self.button_settings)
         self.separatorAct = file_menu.addSeparator()
@@ -285,7 +294,7 @@ class MainWindow(QtWidgets.QMainWindow):
             data = pd.read_csv(file_name, sep=sep, decimal=decimal)
             self.df = data
             self.model = TableModel(self.df, self.round_num)
-            self.labelStatus.setText(f"Rows: {data.shape[0]} Cols: {data.shape[1]}")
+            self.labelStatus.setText(f"Rows: {self.df.shape[0]} Cols: {self.df.shape[1]}")
             self.table.setModel(self.model)
             if data.shape[0] > 0:
                 self.table.selectRow(0)
@@ -297,6 +306,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.button_xlsx.setEnabled(True)
             self.button_sqlite.setEnabled(True)
             self.button_html.setEnabled(True)
+            self.button_nan.setEnabled(True)
             self.setWindowTitle(self.app_title + ": " + file_name)
         except Exception as e:
             QMessageBox.warning(self, 'Error', f"Error loading the file:\n {file_name}")
@@ -316,6 +326,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_xlsx.setEnabled(False)
         self.button_sqlite.setEnabled(False)
         self.button_html.setEnabled(False)
+        self.button_nan.setEnabled(False)
+        self.setWindowTitle(self.app_title)
         self.labelStatus.setText("Rows: 0 Cols: 0")
 
     def onToolbarSummaryButtonClick(self) -> None:
@@ -453,3 +465,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.model = TableModel(self.df, self.round_num)
                 self.table.setModel(self.model)
                 self.table.selectRow(index.row())
+
+    def onRemoveNaN(self):
+        """ Remove rows with missing values """
+        if self.df.shape[0] > 0:
+            button = QMessageBox.question(self, "Remove NaN", "Remove rows with missing values?")
+            if button == QMessageBox.Yes:
+                self.df.dropna(axis=0, how='any', inplace=True)
+                self.model = TableModel(self.df, self.round_num)
+                self.table.setModel(self.model)
+                self.table.selectRow(0)
+                self.labelStatus.setText(f"Rows: {self.df.shape[0]} Cols: {self.df.shape[1]}")
