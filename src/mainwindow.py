@@ -295,11 +295,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # status bar
         self.my_status = QStatusBar(self)
+        self.my_status.addPermanentWidget(self.progress)
+        self.progress.hide()
         self.labelStatus = QLabel("Rows: 0 Cols: 0")
         self.my_status.addPermanentWidget(self.labelStatus)
         self.setStatusBar(self.my_status)
-        self.my_status.addPermanentWidget(self.progress)
-        self.progress.hide()
 
         # set TableView
         self.table = QtWidgets.QTableView()
