@@ -10,6 +10,7 @@ App reads local csv files as data frame (thanks to pandas), downloads csv from i
 -   XlsWriter
 -   SQLAlchemy
 -   requests
+-   argparse
 
 ## Command line usage: 
 
