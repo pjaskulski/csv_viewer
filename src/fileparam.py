@@ -2,15 +2,17 @@ import os
 from PyQt5 import QtCore
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QDialog, QMessageBox, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, \
-    QPushButton, QRadioButton, QFileDialog, QGroupBox, QPlainTextEdit
+    QPushButton, QRadioButton, QFileDialog, QGroupBox, QPlainTextEdit, QCheckBox
 
 
 class ParameterDialog(QDialog):
-    def __init__(self, file_name='', sep=',', decimal='.'):
+    def __init__(self, file_name='', sep=',', decimal='.', header=True, index=False):
         super().__init__()
         self.setMinimumSize(520, 200)
         self.separator = sep
         self.decimal = decimal
+        self.header = header
+        self.index = index
         QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         self.buttonBox = QDialogButtonBox(QBtn)
         self.buttonBox.accepted.connect(self.validate)
@@ -90,6 +92,22 @@ class ParameterDialog(QDialog):
         #
         self.layout.addLayout(self.layout_sepdec)
 
+        # header and index column
+        groupbox_header = QGroupBox("Header and row labels:")
+        self.layout.addWidget(groupbox_header)
+        self.layout_header = QVBoxLayout()
+        groupbox_header.setLayout(self.layout_header)
+
+        self.chk_header = QCheckBox("Header (column name) in first row")
+        self.chk_header.setChecked(self.header)
+        self.layout_header.addWidget(self.chk_header)
+        self.chk_header.toggled.connect(self.onClickedHeader)
+
+        self.chk_index = QCheckBox("Row label in first column")
+        self.chk_index.setChecked(self.index)
+        self.layout_header.addWidget(self.chk_index)
+        self.chk_index.toggled.connect(self.onClickedIndex)
+
         # preview csv file
         groupbox_pre = QGroupBox("Preview:")
         self.layout.addWidget(groupbox_pre)
@@ -131,6 +149,18 @@ class ParameterDialog(QDialog):
         radio = self.sender()
         if radio.isChecked():
             self.decimal = radio.decimal
+
+    def onClickedHeader(self, state):
+        if state == QtCore.Qt.Checked:
+            self.header = True
+        else:
+            self.header = False
+
+    def onClickedIndex(self, state):
+        if state == QtCore.Qt.Checked:
+            self.index = True
+        else:
+            self.index = False
 
     def onBtnFileClicked(self):
         file_name, _ = QFileDialog.getOpenFileName(

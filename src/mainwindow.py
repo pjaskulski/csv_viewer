@@ -320,12 +320,14 @@ class MainWindow(QtWidgets.QMainWindow):
             file_name = dlg.filename.text()
             separator = dlg.separator
             decimal = dlg.decimal
+            header = dlg.header
+            index = dlg.index
         else:
             file_name = None
 
         if file_name:
             self.saveRecent(file_name)
-            self.open_csv_file(file_name, separator, decimal)
+            self.open_csv_file(file_name, separator, decimal, header, index)
 
     def onOpenRecentFile(self, file_name: str, sep=',', decimal='.') -> None:
         """ Open file from recent list, show open dialog """
@@ -336,17 +338,29 @@ class MainWindow(QtWidgets.QMainWindow):
             file_name = dlg.filename.text()
             separator = dlg.separator
             decimal = dlg.decimal
+            header = dlg.header
+            index = dlg.index
         else:
             file_name = None
 
         if file_name:
             self.saveRecent(file_name)
-            self.open_csv_file(file_name, separator, decimal)
+            self.open_csv_file(file_name, separator, decimal, header, index)
 
-    def open_csv_file(self, file_name: str, sep=',', decimal=".") -> None:
+    def open_csv_file(self, file_name: str, sep=',', decimal=".", header=True, index=True) -> None:
         """ Open csv file, load to tableview, set statusbar, enable close icon"""
         try:
-            data = pd.read_csv(file_name, sep=sep, decimal=decimal)
+            if header:
+                my_header = 'infer'
+            else:
+                my_header = None
+
+            if index:
+                my_index = 0
+            else:
+                my_index = False
+
+            data = pd.read_csv(file_name, sep=sep, decimal=decimal, header=my_header, index_col=my_index)
             self.df = data
             self.model = TableModel(self.df, self.round_num)
             self.labelStatus.setText(f"Rows: {self.df.shape[0]} Cols: {self.df.shape[1]}")
