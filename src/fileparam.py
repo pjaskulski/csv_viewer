@@ -101,12 +101,12 @@ class ParameterDialog(QDialog):
         self.chk_header = QCheckBox("Header (column name) in first row")
         self.chk_header.setChecked(self.header)
         self.layout_header.addWidget(self.chk_header)
-        self.chk_header.toggled.connect(self.onClickedHeader)
+        self.chk_header.stateChanged.connect(self.onClickedHeader)
 
         self.chk_index = QCheckBox("Row label in first column")
         self.chk_index.setChecked(self.index)
         self.layout_header.addWidget(self.chk_index)
-        self.chk_index.toggled.connect(self.onClickedIndex)
+        self.chk_index.stateChanged.connect(self.onClickedIndex)
 
         # preview csv file
         groupbox_pre = QGroupBox("Preview:")

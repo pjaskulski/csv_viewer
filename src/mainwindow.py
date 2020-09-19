@@ -88,7 +88,10 @@ class TableModel(QtCore.QAbstractTableModel):
                 return str(self._data.columns[section])
 
             if orientation == Qt.Vertical:
-                return str(self._data.index[section] + 1)
+                if isinstance(self._data.index[section], str):
+                    return self._data.index[section]
+                else:
+                    return str(self._data.index[section] + 1)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -360,6 +363,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 my_index = False
 
+            print(my_header, my_index)
             data = pd.read_csv(file_name, sep=sep, decimal=decimal, header=my_header, index_col=my_index)
             self.df = data
             self.model = TableModel(self.df, self.round_num)
