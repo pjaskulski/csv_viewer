@@ -1,7 +1,11 @@
 # CSV_viewer
 CSV files viewer.
  
-App reads local csv files as data frame (thanks to pandas), downloads csv from internet by api, exports data to xlsx, sqlite, html, csv, markdown, deletes rows with missing values, shows summary and info about dataframe. 
+The app reads local CSV files as a data frame (thanks to 
+pandas), downloads CSV from the internet by API, exports 
+data to XLSX, SQLite, HTML, CSV, markdown, delete rows 
+with missing values, shows summary and info about data 
+frame. 
 
 ## Requirement 
 -   PyQt5
