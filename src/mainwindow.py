@@ -13,6 +13,14 @@ from about import AboutDialog
 from info import InfoDialog
 import dataload
 import time
+import sys
+
+
+
+if "pytest" in sys.modules:
+    app_test = True
+else:
+    app_test = False
 
 
 class WorkerSignals(QObject):
@@ -112,7 +120,7 @@ class TableModel(QtCore.QAbstractTableModel):
 class MainWindow(QtWidgets.QMainWindow):
     MaxRecentFiles = 5
 
-    def __init__(self, app_title):
+    def __init__(self, app_title="CSV Viewer"):
         super().__init__()
         self.progress = QProgressBar()
         self.threadpool = QThreadPool()
@@ -477,13 +485,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event) -> None:
         """ Quit application, ask user before """
-        result = QMessageBox.question(
-            self, self.app_title,
-            "Are you sure you want to quit?",
-            QMessageBox.Yes | QMessageBox.No,
-        )
+        if not app_test:
+            result = QMessageBox.question(
+                self, self.app_title,
+                "Are you sure you want to quit?",
+                QMessageBox.Yes | QMessageBox.No,
+            )
 
-        if result == QMessageBox.Yes:
+        if app_test or result == QMessageBox.Yes:
             event.accept()
         else:
             event.ignore()
