@@ -38,6 +38,21 @@ class MarkdownWorker(QRunnable):
         with open(file_name, 'w') as f:
             size = df.shape[0]
             counter = 0
+
+            # title
+            f.write("***Table***\n\n")
+
+            # header line
+            headers = list(df.columns.values)
+            line = " | "
+            line2 = "|"
+            for item in headers:
+                line += str(item) + " | "
+                line2 += "---:|"
+            f.write(line + '\n')
+            f.write(line2 + '\n')
+
+            # data
             for row in df.itertuples():
                 counter += 1
                 line = " | "
@@ -557,7 +572,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def onExportMarkdown(self):
         """ export to markdown table in thread """
-        file_name, _ = QFileDialog.getSaveFileName(self, 'Export to Markdown file', '', ".txt(*.txt)")
+        file_name, _ = QFileDialog.getSaveFileName(self, 'Export to Markdown file', '', ".md(*.md)")
         if file_name:
             worker = MarkdownWorker(file_name, self.df)
             worker.signals.progress.connect(self.update_progress)
