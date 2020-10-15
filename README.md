@@ -7,16 +7,16 @@ data to XLSX, SQLite, HTML, CSV, markdown, delete rows
 with missing values, shows summary and info about data 
 frame. 
 
-## Requirement 
+## Requirement
 -   PyQt5
--   Python 3.x  
+-   Python 3.x
 -   Pandas 
 -   XlsWriter
 -   SQLAlchemy
 -   requests
 -   argparse
 
-## Command line usage: 
+## Command line usage:
 
     python csv_viewer.py [-h] -p PATH -s SEPARATOR -d DECIMAL
 
@@ -25,12 +25,13 @@ frame.
         -p PATH       Path to CSV file
         -s SEPARATOR  Separator: comma, semicolon or tab
         -d DECIMAL    Decimal point: dot or comma
-    
+
     example:
         python csv_viewer.py -p small_data.csv -s comma -d dot 
 
 ## Screenshots:
 
+![Screen](/doc/csv_viewer.png)
 ![Screen](/doc/csv_viewer.png)
 
 ![Screen](/doc/csv_viewer2.png)
