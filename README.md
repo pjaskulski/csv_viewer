@@ -32,7 +32,6 @@ frame.
 ## Screenshots:
 
 ![Screen](/doc/csv_viewer.png)
-![Screen](/doc/csv_viewer.png)
 
 ![Screen](/doc/csv_viewer2.png)
 
